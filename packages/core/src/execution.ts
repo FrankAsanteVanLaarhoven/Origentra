@@ -19,7 +19,7 @@ import { sha256 } from './digest.ts';
 import { sign, verify as verifySig, type KeyPair } from './keys.ts';
 import { verifyIdentity, hasScope } from './identity.ts';
 import { decisionDigest, type PolicyDecision } from './policy.ts';
-import type { SignedIdentityClaim } from './types.ts';
+import type { SignedIdentityClaim, Passport } from './types.ts';
 import type { TrustStore } from './trust.ts';
 
 export interface Approval {
@@ -148,6 +148,13 @@ export interface ExecutionReceipt {
   signature: string;
 }
 
+/** Optional publishable payload; adapters that persist output use it. */
+export interface PublishableRecord {
+  passport: Passport;
+  assetBase64: string;
+  contentType: string;
+}
+
 export interface ExecuteParams {
   decision: PolicyDecision;
   authorization: Authorization;
@@ -156,45 +163,66 @@ export interface ExecuteParams {
   idempotencyKey: string;
   now: string;
   executionKey: KeyPair;
+  /** Content to publish; required by persisting adapters, ignored by simulated. */
+  record?: PublishableRecord;
+}
+
+/** The contract every platform adapter implements (simulated or real). */
+export interface PublicationAdapter {
+  readonly name: string;
+  execute(params: ExecuteParams): ExecutionReceipt;
+}
+
+/**
+ * Build and sign an execution receipt. Shared by every adapter so the receipt
+ * shape, external-reference derivation and signature are identical regardless
+ * of where the side effect lands. `externalRef` uses the adapter's own scheme.
+ */
+export function buildReceipt(
+  params: ExecuteParams,
+  adapterName: string,
+  externalRefScheme: string,
+): ExecutionReceipt {
+  const status: ExecutionReceipt['status'] = params.authorization.authorized
+    ? 'executed'
+    : 'blocked';
+  const body = {
+    proposalId: params.decision.proposalId,
+    decisionDigest: decisionDigest(params.decision),
+    platform: params.platform,
+    assetId: params.assetId,
+    idempotencyKey: params.idempotencyKey,
+    status,
+    externalRef:
+      status === 'executed'
+        ? externalRefScheme + '://' + params.platform + '/' + sha256(params.idempotencyKey).slice(7, 23)
+        : '',
+    executedAt: params.now,
+    adapter: adapterName,
+  };
+  const signature = sign(params.executionKey.privateKeyPem, canonicalBytes(body));
+  return {
+    ...body,
+    signer: { keyId: params.executionKey.keyId, publicKeyPem: params.executionKey.publicKeyPem },
+    signature,
+  };
 }
 
 /**
  * A simulated platform adapter. It performs no real network I/O; it records an
- * idempotent, signed receipt. Real adapters (LinkedIn, YouTube, ...) are a later
- * milestone and implement the same interface. Nothing here claims to have
- * published to a real platform.
+ * idempotent, signed receipt in memory. Real network adapters (LinkedIn,
+ * YouTube, ...) require credentials and are a later milestone; a real *local*
+ * persisting adapter lives in @origentra/store. Nothing here claims to have
+ * published to a real third-party platform.
  */
-export class SimulatedAdapter {
+export class SimulatedAdapter implements PublicationAdapter {
   readonly name = 'simulated/1';
   private readonly receipts = new Map<string, ExecutionReceipt>();
 
   execute(params: ExecuteParams): ExecutionReceipt {
     const existing = this.receipts.get(params.idempotencyKey);
     if (existing) return existing; // idempotent: side effect happens at most once
-
-    const status: ExecutionReceipt['status'] = params.authorization.authorized
-      ? 'executed'
-      : 'blocked';
-    const body = {
-      proposalId: params.decision.proposalId,
-      decisionDigest: decisionDigest(params.decision),
-      platform: params.platform,
-      assetId: params.assetId,
-      idempotencyKey: params.idempotencyKey,
-      status,
-      externalRef:
-        status === 'executed'
-          ? 'sim://' + params.platform + '/' + sha256(params.idempotencyKey).slice(7, 23)
-          : '',
-      executedAt: params.now,
-      adapter: this.name,
-    };
-    const signature = sign(params.executionKey.privateKeyPem, canonicalBytes(body));
-    const receipt: ExecutionReceipt = {
-      ...body,
-      signer: { keyId: params.executionKey.keyId, publicKeyPem: params.executionKey.publicKeyPem },
-      signature,
-    };
+    const receipt = buildReceipt(params, this.name, 'sim');
     this.receipts.set(params.idempotencyKey, receipt);
     return receipt;
   }
