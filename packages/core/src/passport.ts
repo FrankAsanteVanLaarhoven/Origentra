@@ -79,6 +79,12 @@ export interface VerifyOptions {
   assetBytes?: Buffer | Uint8Array | string;
   /** Similarity threshold for fuzzy provenance recovery. Default 0.6. */
   fuzzyThreshold?: number;
+  /**
+   * Optional external revocation check (e.g. a RevocationRegistry from
+   * @origentra/transparency). Lets a verifier flag CREDENTIAL_REVOKED even when
+   * the presented passport object itself is not marked revoked.
+   */
+  isRevoked?: (passport: Passport) => boolean;
 }
 
 /**
@@ -104,7 +110,7 @@ export function verifyPassport(passport: Passport, opts: VerifyOptions = {}): Ve
   const signerTrusted = !!opts.trustStore && opts.trustStore.has(passport.signer.keyId);
   states.push(signerTrusted ? 'SIGNER_TRUSTED' : 'SIGNER_UNKNOWN');
 
-  const revoked = !!passport.revocation;
+  const revoked = !!passport.revocation || (opts.isRevoked?.(passport) ?? false);
   if (revoked) states.push('CREDENTIAL_REVOKED');
 
   if (opts.assetBytes !== undefined) {

@@ -36,6 +36,7 @@ this harness", nothing more.
 | Cross-tenant isolation failures | tenant reads another's data | 0 | hard |
 | Evidence completeness | incident packet incomplete | ≥99% | soft |
 | Decision determinism | non-deterministic authorisation | 100% | hard |
+| Transparency-log consistency | log rewrites history undetectably | 100% | hard |
 
 ## What the registered/stress split means
 

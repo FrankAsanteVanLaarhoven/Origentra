@@ -78,12 +78,21 @@ it is a boundary of what Milestone 1 claims.
   It proves reproducibility and catches regressions; it is not third-party audit.
   Independent replication on an external corpus is the goal.
 
-## Audit
+## Audit & transparency log
 
-- The hash chain is tamper-evident **within a log instance**. Detecting tampering
-  you were never shown requires periodically publishing the head hash (and
-  optionally anchoring it externally). That publication mechanism is not built.
-- The log is in-memory; durability and append-only storage are a later milestone.
+- The core audit hash chain (`@origentra/core` `audit.ts`) is tamper-evident
+  **within a log instance**.
+- `@origentra/transparency` adds a Merkle log with signed checkpoints and
+  inclusion/consistency proofs, so append-only-ness is provable between any two
+  checkpoints and the head is independently verifiable. **However**, there is no
+  distributed **witness/gossip** network: a malicious operator could fork the log
+  and present different (self-consistent) heads to different clients. Detecting
+  that requires third-party witnesses or gossip, which is not implemented.
+  Optional external anchoring of checkpoint roots is also not implemented.
+- Both logs are in-memory; durable append-only storage is a later milestone.
+- Revocation is honoured only for entries signed by a trusted key; there is no
+  automated distribution/subscription protocol yet — a verifier loads revocation
+  entries from a supplied source.
 
 ## Tooling
 

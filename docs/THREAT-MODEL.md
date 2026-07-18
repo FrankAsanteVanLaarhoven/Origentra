@@ -39,9 +39,11 @@ integrations are out of scope here and carry their own threat models when built.
 
 ## Residual risks (not mitigated in Milestone 1)
 
-- **Key compromise / rotation.** No HSM/KMS integration, no rotation protocol,
-  no revocation distribution. A stolen private key forges artefacts until its
-  key id is removed from every trust store.
+- **Key compromise / rotation.** No HSM/KMS integration and no rotation protocol.
+  A stolen private key forges artefacts until its key id is removed from every
+  trust store. (Revocation *distribution* is now partially addressed by
+  `@origentra/transparency`: a trusted, log-recorded revocation makes a verifier
+  emit `CREDENTIAL_REVOKED`. A distributed witness/gossip layer is still missing.)
 - **Provenance stripping / re-encoding.** See `LIMITATIONS.md` — perceptual
   hashing is not yet implemented, so re-encoded media evades fuzzy recovery.
 - **Durability.** In-memory stores; no persistence, replication or backup.

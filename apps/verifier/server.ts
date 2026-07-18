@@ -15,8 +15,10 @@
  */
 
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from 'node:http';
+import { readFileSync, existsSync } from 'node:fs';
 import { verifyPassport, TrustStore, type Passport } from '../../packages/core/src/index.ts';
 import { PublishStore } from '../../packages/store/src/index.ts';
+import { RevocationRegistry, type RevocationEntry } from '../../packages/transparency/src/index.ts';
 
 function send(res: ServerResponse, status: number, body: unknown, type = 'application/json') {
   const payload = type === 'application/json' ? JSON.stringify(body) : String(body);
@@ -45,8 +47,15 @@ function trustFromPublished(store: PublishStore): TrustStore {
   return trust;
 }
 
-export function createVerifier(publishFile: string): Server {
+export function createVerifier(publishFile: string, revocationFile?: string): Server {
   const store = new PublishStore(publishFile);
+  const revocationEntries: RevocationEntry[] =
+    revocationFile && existsSync(revocationFile)
+      ? readFileSync(revocationFile, 'utf8')
+          .split('\n')
+          .filter((l) => l.trim())
+          .map((l) => JSON.parse(l) as RevocationEntry)
+      : [];
 
   return createServer((req, res) => {
     void handle(req, res).catch((err) => send(res, 400, { error: String(err?.message ?? err) }));
@@ -74,9 +83,12 @@ export function createVerifier(publishFile: string): Server {
       const body = (await readJson(req)) as { passport?: Passport; assetBase64?: string };
       if (!body.passport) return send(res, 400, { error: 'passport required' });
       const bytes = body.assetBase64 ? Buffer.from(body.assetBase64, 'base64') : undefined;
+      const trust = trustFromPublished(store);
+      const registry = RevocationRegistry.fromEntries(revocationEntries, trust);
       const result = verifyPassport(body.passport, {
-        trustStore: trustFromPublished(store),
+        trustStore: trust,
         assetBytes: bytes,
+        isRevoked: (p) => registry.isRevoked('passport', p.manifest.digest),
       });
       return send(res, 200, result);
     }
@@ -154,8 +166,9 @@ load();
 // Run directly: node apps/verifier/server.ts  (PORT, ORIGENTRA_PUBLISH_FILE)
 if (import.meta.url === `file://${process.argv[1]}`) {
   const file = process.env.ORIGENTRA_PUBLISH_FILE ?? '.origentra/published.jsonl';
+  const revFile = process.env.ORIGENTRA_REVOCATIONS_FILE;
   const port = Number(process.env.PORT ?? 8787);
-  createVerifier(file).listen(port, () => {
+  createVerifier(file, revFile).listen(port, () => {
     console.log(`Origentra Verify listening on http://localhost:${port}  (published: ${file})`);
   });
 }

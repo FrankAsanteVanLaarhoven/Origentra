@@ -30,6 +30,10 @@ may assert about Milestone 1. It is updated as capabilities land.
 | A resilient HTTP adapter (OAuth2, retry/backoff, timeout, idempotency header) publishes end-to-end against a mock platform. | `@origentra/adapters`, `test/http-adapter.test.ts` |
 | A network publish that is not confirmed throws a categorised error — it never signs a fake "executed" receipt. | `src/errors.ts`, `src/http-adapter.ts`, `test/http-adapter.test.ts` |
 | The LinkedIn UGC ShareContent body mapping is implemented and verified against a mock endpoint. | `src/linkedin.ts`, `test/http-adapter.test.ts` |
+| Inclusion proofs verify an entry is in the log; consistency proofs prove append-only growth; a rewritten history fails. | `@origentra/transparency` `merkle.ts`, `test/merkle.test.ts` (exhaustive) |
+| Transparency-log checkpoints are signed and verify only under a trusted key. | `src/log.ts`, `test/log.test.ts` |
+| A revocation is honoured only when signed by a trusted key, and is itself recorded in the transparency log. | `src/revocation.ts`, `test/revocation.test.ts` |
+| A published passport can be revoked after issuance; the public verifier then reports CREDENTIAL_REVOKED. | `apps/verifier`, `apps/verifier/test/verifier.test.ts` |
 
 ## Prohibited claims (NOT supported by this codebase)
 
@@ -54,6 +58,10 @@ may assert about Milestone 1. It is updated as capabilities land.
   platform monitoring is implemented.
 - ❌ "A valid passport proves the content is true." — a passport proves
   provenance and integrity, **not** factual truth.
+- ❌ "Origentra's transparency log is externally witnessed / gossiped." — it is a
+  single-instance log; checkpoints are signed and verifiable, but there is no
+  distributed witness/gossip network to detect an operator that forks the log or
+  shows different heads to different clients (see `docs/LIMITATIONS.md`).
 - ❌ Any certification/compliance claim (SOC 2, ISO, GDPR-certified, etc.) — none
   has been independently obtained.
 

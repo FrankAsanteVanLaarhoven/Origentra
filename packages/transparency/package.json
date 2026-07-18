@@ -1,0 +1,13 @@
+{
+  "name": "@origentra/transparency",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Verifiable transparency log (RFC 6962-style Merkle tree, signed checkpoints, inclusion + consistency proofs) and a revocation registry.",
+  "license": "MIT",
+  "author": "Frank Asante Van Laarhoven <frankleroyvan@gmail.com>",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

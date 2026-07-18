@@ -40,6 +40,11 @@ import {
 } from '../packages/core/src/index.ts';
 import { DurableManifestStore } from '../packages/store/src/index.ts';
 import {
+  TransparencyLog,
+  verifyInclusionResult,
+  verifyConsistencyResult,
+} from '../packages/transparency/src/index.ts';
+import {
   imageFingerprintRaw,
   perceptualSimilarity,
   dHash,
@@ -398,6 +403,30 @@ function kpiDeterminism() {
   record({ kpi: 'Decision determinism', failureMode: 'non-deterministic authorisation (audit ambiguity)', value: (stable / K) * 100, unit: '%', target: '100%', pass: stable === K, hardGate: true, detail: `${stable}/${K} identical decision digests` });
 }
 
+// ---- KPI 14: transparency-log consistency ----------------------------------
+
+function kpiTransparency() {
+  const log = new TransparencyLog();
+  const N = 64;
+  for (let i = 0; i < N; i++) log.append(`event-${i}`);
+  let checks = 0;
+  let correct = 0;
+  // Every entry is provably included.
+  for (let i = 0; i < N; i++) {
+    checks++;
+    if (verifyInclusionResult(log.inclusionProof(i))) correct++;
+  }
+  // Every earlier size is a provable append-only prefix of the current log.
+  for (let m = 1; m < N; m++) {
+    checks++;
+    if (verifyConsistencyResult(log.consistencyProof(m))) correct++;
+  }
+  // A rewritten head must FAIL consistency (tamper detection).
+  checks++;
+  if (!verifyConsistencyResult({ ...log.consistencyProof(20), newRoot: 'ff'.repeat(32) })) correct++;
+  record({ kpi: 'Transparency-log consistency', failureMode: 'log rewrites history undetectably', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} inclusion + consistency + tamper checks` });
+}
+
 // ---- run + report -----------------------------------------------------------
 
 function run() {
@@ -413,6 +442,7 @@ function run() {
   kpiCrossTenant();
   kpiEvidence();
   kpiDeterminism();
+  kpiTransparency();
   const durationMs = Number(process.hrtime.bigint() - started) / 1e6;
 
   // Table
