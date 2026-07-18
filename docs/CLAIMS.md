@@ -37,6 +37,9 @@ may assert about Milestone 1. It is updated as capabilities land.
 | A witness cosigns only append-only extensions; rollbacks and forks are refused; a split view is directly detectable. | `src/witness.ts`, `test/witness.test.ts` |
 | A witnessed checkpoint is trustworthy only with a quorum of trusted witness cosignatures. | `verifyWitnessed`, `test/witness.test.ts` |
 | The transparency log is durable — it reconstructs from disk with the same root and valid proofs. | `src/log.ts` (file mode), `test/durable.test.ts` |
+| Witnesses cosign over HTTP; a log operator distributes a checkpoint to a witness quorum. | `apps/witness`, `src/http-transport.ts`, `src/gossip.ts`, `apps/witness/test` |
+| An auditor querying witnesses detects a split view (a log that showed different heads). | `auditSplitView`, `test/gossip.test.ts`, `apps/witness/test` |
+| A checkpoint root can be anchored to a local append-only anchor and verified under trust. | `src/anchor.ts`, `test/anchor.test.ts` |
 
 ## Prohibited claims (NOT supported by this codebase)
 
@@ -61,13 +64,14 @@ may assert about Milestone 1. It is updated as capabilities land.
   platform monitoring is implemented.
 - ❌ "A valid passport proves the content is true." — a passport proves
   provenance and integrity, **not** factual truth.
-- ❌ "Origentra runs a live witness gossip network." — the witness *cosigning*
-  primitive and fork/split-view *detection* exist and are tested, but there is no
-  running network that automatically distributes checkpoints and cosignatures
-  between witnesses and clients; wiring witnesses together over the wire is future
-  work (see `docs/LIMITATIONS.md`).
-- ❌ "Origentra anchors checkpoints to an external blockchain." — not
-  implemented; optional external anchoring remains future work.
+- ❌ "Origentra operates a deployed multi-operator witness federation." — the
+  gossip *transport* (witness HTTP service, client, distribution, split-view
+  audit) exists and is tested over loopback, but there is no continuously-running
+  federation of independent operators, no witness discovery/registry, and no
+  automatic re-audit daemon. Deploying and federating that is future work.
+- ❌ "Origentra anchors checkpoints to an external blockchain / third-party
+  timestamp." — only a **local** file anchor exists; an external/on-chain anchor
+  is a matching implementation of the `Anchor` interface that is not built.
 - ❌ Any certification/compliance claim (SOC 2, ISO, GDPR-certified, etc.) — none
   has been independently obtained.
 

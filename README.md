@@ -42,8 +42,8 @@ Run it:
 
 ```bash
 node apps/cli/origentra.ts demo      # the whole loop, end-to-end
-npm test                             # 102 tests across all packages
-npm run bench                        # SocialTrust-Bench v0.1 (13 KPIs)
+npm test                             # 109 tests across all packages
+npm run bench                        # SocialTrust-Bench v0.1 (15 KPIs)
 npm run serve                        # Origentra Verify on http://localhost:8787
 ```
 
@@ -93,9 +93,13 @@ packages/transparency/  @origentra/transparency — verifiable log + revocation
     log.ts              signed checkpoints + proof results; durable (file-backed)
     revocation.ts       trust-gated, log-recorded revocation registry
     witness.ts          witness cosigning + fork / split-view detection
+    gossip.ts           checkpoint distribution + split-view audit (transport-agnostic)
+    http-transport.ts   HTTP witness client
+    anchor.ts           external anchoring interface + local file anchor
 apps/cli/               reference CLI + end-to-end demo
+apps/witness/           Origentra Witness — node:http witness service
 apps/verifier/          Origentra Verify — node:http public verifier + inline UI
-bench/                  SocialTrust-Bench v0.1 — 13-KPI reproducible harness
+bench/                  SocialTrust-Bench v0.1 — 15-KPI reproducible harness
 docs/                   CLAIMS · LIMITATIONS · THREAT-MODEL · SOCIALTRUST-BENCH · ADRs
 ```
 
@@ -143,12 +147,13 @@ these are later milestones and are **not** present or claimed:
 | **2. Public verifier + persistence** | node:http verifier, durable tenant-isolated store | ✅ done |
 | **3. Perceptual media** | zero-dep PNG codec + dHash (image survivability) | ✅ done |
 | **4. Real adapter** | non-simulated local publishing adapter behind the shared contract | ✅ done |
-| **5. SocialTrust-Bench v0.1** | 13-KPI reproducible benchmark, each mapped to a failure mode | ✅ done |
+| **5. SocialTrust-Bench v0.1** | 15-KPI reproducible benchmark, each mapped to a failure mode | ✅ done |
 | **6. Network adapter transport** | OAuth2 + retry/backoff/timeout/idempotency HTTP adapter + LinkedIn mapping, tested vs. a mock platform | ✅ done |
 | **7. Transparency log + revocation** | RFC 6962 Merkle log, signed checkpoints, inclusion/consistency proofs, trust-gated revocation consulted by the verifier | ✅ done |
 | **8. Witnessing + durable log** | witness cosigning (refuses non-append-only heads), fork/split-view detection, file-backed durable log | ✅ done |
+| **8b. Gossip transport + anchoring** | HTTP witness service, client transport, checkpoint distribution, split-view auditor, local checkpoint anchor | ✅ done |
 | 6b. Live platform integration | run the LinkedIn/YouTube adapter against the real API with operator credentials | planned |
-| 8b. Witness gossip transport + anchoring | live network distributing checkpoints/cosignatures; external root anchoring; Postgres RLS | planned |
+| 8c. Witness federation + on-chain anchor | deployed multi-operator witnesses, discovery/registry, external anchoring, Postgres RLS | planned |
 | 9. Perceptual audio/video + enterprise controls | chromaprint/frame-hash, SAML/SCIM/CMK | planned |
 
 ## License

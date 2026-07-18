@@ -44,11 +44,13 @@ integrations are out of scope here and carry their own threat models when built.
   trust store. (Revocation *distribution* is addressed by
   `@origentra/transparency`: a trusted, log-recorded revocation makes a verifier
   emit `CREDENTIAL_REVOKED`.)
-- **Log fork / split view.** Detectable but not yet prevented in transit. Witness
-  cosigning refuses non-append-only heads and split views are directly
-  detectable (`detectSplitView`), but there is no live gossip network wiring
-  witnesses and clients together, so a fork is caught only when parties actually
-  compare cosigned checkpoints. External anchoring is also not implemented.
+- **Log fork / split view.** Now detectable in transit: witnesses refuse
+  non-append-only heads, a log operator distributes checkpoints to a witness
+  quorum, and `auditSplitView` catches a log that showed different witnesses
+  different heads. The remaining gap is *deployment* — no running multi-operator
+  federation or continuous re-audit daemon, and external (on-chain) anchoring is
+  local-only. So detection depends on witnesses/auditors actually being run and
+  compared.
 - **Provenance stripping / re-encoding.** See `LIMITATIONS.md` — perceptual
   hashing is not yet implemented, so re-encoded media evades fuzzy recovery.
 - **Durability.** In-memory stores; no persistence, replication or backup.
