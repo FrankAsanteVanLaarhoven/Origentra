@@ -6,3 +6,4 @@
 export * from './merkle.ts';
 export * from './log.ts';
 export * from './revocation.ts';
+export * from './witness.ts';

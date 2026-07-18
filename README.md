@@ -42,7 +42,7 @@ Run it:
 
 ```bash
 node apps/cli/origentra.ts demo      # the whole loop, end-to-end
-npm test                             # 94 tests across all packages
+npm test                             # 102 tests across all packages
 npm run bench                        # SocialTrust-Bench v0.1 (13 KPIs)
 npm run serve                        # Origentra Verify on http://localhost:8787
 ```
@@ -90,8 +90,9 @@ packages/adapters/      @origentra/adapters — network publication adapters
     linkedin.ts         LinkedIn UGC body mapping (config-only; not run live)
 packages/transparency/  @origentra/transparency — verifiable log + revocation
     merkle.ts           RFC 6962 Merkle: inclusion + consistency proofs
-    log.ts              signed checkpoints, inclusion/consistency proof results
+    log.ts              signed checkpoints + proof results; durable (file-backed)
     revocation.ts       trust-gated, log-recorded revocation registry
+    witness.ts          witness cosigning + fork / split-view detection
 apps/cli/               reference CLI + end-to-end demo
 apps/verifier/          Origentra Verify — node:http public verifier + inline UI
 bench/                  SocialTrust-Bench v0.1 — 13-KPI reproducible harness
@@ -145,8 +146,9 @@ these are later milestones and are **not** present or claimed:
 | **5. SocialTrust-Bench v0.1** | 13-KPI reproducible benchmark, each mapped to a failure mode | ✅ done |
 | **6. Network adapter transport** | OAuth2 + retry/backoff/timeout/idempotency HTTP adapter + LinkedIn mapping, tested vs. a mock platform | ✅ done |
 | **7. Transparency log + revocation** | RFC 6962 Merkle log, signed checkpoints, inclusion/consistency proofs, trust-gated revocation consulted by the verifier | ✅ done |
+| **8. Witnessing + durable log** | witness cosigning (refuses non-append-only heads), fork/split-view detection, file-backed durable log | ✅ done |
 | 6b. Live platform integration | run the LinkedIn/YouTube adapter against the real API with operator credentials | planned |
-| 8. Distributed witnessing + durable storage | witness/gossip for the log, external anchoring, Postgres RLS | planned |
+| 8b. Witness gossip transport + anchoring | live network distributing checkpoints/cosignatures; external root anchoring; Postgres RLS | planned |
 | 9. Perceptual audio/video + enterprise controls | chromaprint/frame-hash, SAML/SCIM/CMK | planned |
 
 ## License

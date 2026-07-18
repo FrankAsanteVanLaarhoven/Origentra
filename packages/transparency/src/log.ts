@@ -13,6 +13,8 @@
  * verifiable, and append-only-ness is provable between any two checkpoints.
  */
 
+import { appendFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 import {
   canonicalBytes,
   sign,
@@ -65,9 +67,25 @@ const unhex = (s: string) => Buffer.from(s, 'hex');
 export class TransparencyLog {
   #leaves: Buffer[] = [];
   #logId: string;
+  #file: string | undefined;
 
-  constructor(logId = 'origentra-log/1') {
+  /**
+   * When `file` is given, the log is durable: leaf hashes are appended to the
+   * file (one hex line each) and reloaded on construction, so the log survives
+   * restarts. Only leaf hashes are stored — proofs need nothing more.
+   */
+  constructor(logId = 'origentra-log/1', file?: string) {
     this.#logId = logId;
+    this.#file = file;
+    if (file) {
+      if (existsSync(file)) {
+        for (const line of readFileSync(file, 'utf8').split('\n')) {
+          if (line.trim()) this.#leaves.push(Buffer.from(line.trim(), 'hex'));
+        }
+      } else {
+        mkdirSync(dirname(file), { recursive: true });
+      }
+    }
   }
 
   get logId(): string {
@@ -78,7 +96,9 @@ export class TransparencyLog {
   }
 
   append(data: Buffer | Uint8Array | string): { index: number; size: number } {
-    this.#leaves.push(leafHash(data));
+    const leaf = leafHash(data);
+    this.#leaves.push(leaf);
+    if (this.#file) appendFileSync(this.#file, leaf.toString('hex') + '\n');
     return { index: this.#leaves.length - 1, size: this.#leaves.length };
   }
 

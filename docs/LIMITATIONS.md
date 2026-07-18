@@ -84,12 +84,18 @@ it is a boundary of what Milestone 1 claims.
   **within a log instance**.
 - `@origentra/transparency` adds a Merkle log with signed checkpoints and
   inclusion/consistency proofs, so append-only-ness is provable between any two
-  checkpoints and the head is independently verifiable. **However**, there is no
-  distributed **witness/gossip** network: a malicious operator could fork the log
-  and present different (self-consistent) heads to different clients. Detecting
-  that requires third-party witnesses or gossip, which is not implemented.
-  Optional external anchoring of checkpoint roots is also not implemented.
-- Both logs are in-memory; durable append-only storage is a later milestone.
+  checkpoints and the head is independently verifiable.
+- **Witnessing:** the cosigning primitive and fork/split-view detection exist —
+  a witness cosigns only append-only extensions, and two same-size checkpoints
+  with different roots are proof of a fork. **However**, there is no live
+  **gossip network** that automatically distributes checkpoints/cosignatures
+  between witnesses and clients; that transport is future work. Optional external
+  (e.g. blockchain) anchoring of checkpoint roots is also not implemented.
+- **Durability:** the transparency log can be file-backed (leaf hashes appended,
+  reconstructed on restart). The core audit chain and the revocation index are
+  still in-memory, and none of these is a hardened database. PostgreSQL with
+  row-level security remains a later milestone (the file stores enforce the same
+  isolation contract in the meantime).
 - Revocation is honoured only for entries signed by a trusted key; there is no
   automated distribution/subscription protocol yet — a verifier loads revocation
   entries from a supplied source.

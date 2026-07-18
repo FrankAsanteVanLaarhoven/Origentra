@@ -41,6 +41,8 @@ import {
 import { DurableManifestStore } from '../packages/store/src/index.ts';
 import {
   TransparencyLog,
+  Witness,
+  detectSplitView,
   verifyInclusionResult,
   verifyConsistencyResult,
 } from '../packages/transparency/src/index.ts';
@@ -427,6 +429,44 @@ function kpiTransparency() {
   record({ kpi: 'Transparency-log consistency', failureMode: 'log rewrites history undetectably', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} inclusion + consistency + tamper checks` });
 }
 
+// ---- KPI 15: witness fork detection ----------------------------------------
+
+function kpiWitness() {
+  const logKey = generateKeyPair();
+  const logTrust = new TrustStore().add(logKey.keyId, logKey.publicKeyPem);
+  let checks = 0;
+  let correct = 0;
+
+  // Honest append-only growth must always be cosigned.
+  const witness = new Witness(generateKeyPair(), logTrust);
+  const log = new TransparencyLog();
+  let lastSize = 0;
+  for (let round = 0; round < 20; round++) {
+    for (let j = 0; j < 3; j++) log.append(`w-${round}-${j}`);
+    const cp = log.checkpoint(logKey);
+    const proof = lastSize > 0 ? log.consistencyProof(lastSize) : undefined;
+    checks++;
+    if (witness.cosign(cp, proof).accepted) correct++;
+    lastSize = log.size;
+  }
+
+  // A fork must always be refused, and a split view must always be detectable.
+  for (let round = 0; round < 20; round++) {
+    const honest = new TransparencyLog();
+    for (let i = 0; i < 8; i++) honest.append(`h-${i}`);
+    const w = new Witness(generateKeyPair(), logTrust);
+    w.cosign(honest.checkpoint(logKey));
+    const fork = new TransparencyLog();
+    for (let i = 0; i < 8; i++) fork.append(`f-${round}-${i}`);
+    checks++;
+    if (!w.cosign(fork.checkpoint(logKey)).accepted) correct++;
+    checks++;
+    if (detectSplitView(honest.checkpoint(logKey), fork.checkpoint(logKey))) correct++;
+  }
+
+  record({ kpi: 'Witness fork detection', failureMode: 'forked / split-view log accepted', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} cosign + refusal + split-view checks` });
+}
+
 // ---- run + report -----------------------------------------------------------
 
 function run() {
@@ -443,6 +483,7 @@ function run() {
   kpiEvidence();
   kpiDeterminism();
   kpiTransparency();
+  kpiWitness();
   const durationMs = Number(process.hrtime.bigint() - started) / 1e6;
 
   // Table

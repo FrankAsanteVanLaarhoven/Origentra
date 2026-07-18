@@ -34,6 +34,9 @@ may assert about Milestone 1. It is updated as capabilities land.
 | Transparency-log checkpoints are signed and verify only under a trusted key. | `src/log.ts`, `test/log.test.ts` |
 | A revocation is honoured only when signed by a trusted key, and is itself recorded in the transparency log. | `src/revocation.ts`, `test/revocation.test.ts` |
 | A published passport can be revoked after issuance; the public verifier then reports CREDENTIAL_REVOKED. | `apps/verifier`, `apps/verifier/test/verifier.test.ts` |
+| A witness cosigns only append-only extensions; rollbacks and forks are refused; a split view is directly detectable. | `src/witness.ts`, `test/witness.test.ts` |
+| A witnessed checkpoint is trustworthy only with a quorum of trusted witness cosignatures. | `verifyWitnessed`, `test/witness.test.ts` |
+| The transparency log is durable — it reconstructs from disk with the same root and valid proofs. | `src/log.ts` (file mode), `test/durable.test.ts` |
 
 ## Prohibited claims (NOT supported by this codebase)
 
@@ -58,10 +61,13 @@ may assert about Milestone 1. It is updated as capabilities land.
   platform monitoring is implemented.
 - ❌ "A valid passport proves the content is true." — a passport proves
   provenance and integrity, **not** factual truth.
-- ❌ "Origentra's transparency log is externally witnessed / gossiped." — it is a
-  single-instance log; checkpoints are signed and verifiable, but there is no
-  distributed witness/gossip network to detect an operator that forks the log or
-  shows different heads to different clients (see `docs/LIMITATIONS.md`).
+- ❌ "Origentra runs a live witness gossip network." — the witness *cosigning*
+  primitive and fork/split-view *detection* exist and are tested, but there is no
+  running network that automatically distributes checkpoints and cosignatures
+  between witnesses and clients; wiring witnesses together over the wire is future
+  work (see `docs/LIMITATIONS.md`).
+- ❌ "Origentra anchors checkpoints to an external blockchain." — not
+  implemented; optional external anchoring remains future work.
 - ❌ Any certification/compliance claim (SOC 2, ISO, GDPR-certified, etc.) — none
   has been independently obtained.
 

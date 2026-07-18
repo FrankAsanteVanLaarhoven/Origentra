@@ -41,9 +41,14 @@ integrations are out of scope here and carry their own threat models when built.
 
 - **Key compromise / rotation.** No HSM/KMS integration and no rotation protocol.
   A stolen private key forges artefacts until its key id is removed from every
-  trust store. (Revocation *distribution* is now partially addressed by
+  trust store. (Revocation *distribution* is addressed by
   `@origentra/transparency`: a trusted, log-recorded revocation makes a verifier
-  emit `CREDENTIAL_REVOKED`. A distributed witness/gossip layer is still missing.)
+  emit `CREDENTIAL_REVOKED`.)
+- **Log fork / split view.** Detectable but not yet prevented in transit. Witness
+  cosigning refuses non-append-only heads and split views are directly
+  detectable (`detectSplitView`), but there is no live gossip network wiring
+  witnesses and clients together, so a fork is caught only when parties actually
+  compare cosigned checkpoints. External anchoring is also not implemented.
 - **Provenance stripping / re-encoding.** See `LIMITATIONS.md` — perceptual
   hashing is not yet implemented, so re-encoded media evades fuzzy recovery.
 - **Durability.** In-memory stores; no persistence, replication or backup.
