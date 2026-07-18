@@ -172,25 +172,42 @@ export interface ExecuteParams {
   record?: PublishableRecord;
 }
 
-/** The contract every platform adapter implements (simulated or real). */
+/**
+ * The contract every platform adapter implements (simulated, local or network).
+ * Network adapters are asynchronous, so execute() may return a Promise.
+ */
 export interface PublicationAdapter {
   readonly name: string;
-  execute(params: ExecuteParams): ExecutionReceipt;
+  execute(params: ExecuteParams): ExecutionReceipt | Promise<ExecutionReceipt>;
+}
+
+export interface ReceiptOptions {
+  /** Scheme for a locally-derived externalRef when no explicit ref is given. */
+  scheme?: string;
+  /** External reference returned by a real platform (used verbatim). */
+  externalRef?: string;
+  /** Override status; defaults to authorization.authorized ? executed : blocked. */
+  status?: ExecutionReceipt['status'];
 }
 
 /**
  * Build and sign an execution receipt. Shared by every adapter so the receipt
- * shape, external-reference derivation and signature are identical regardless
- * of where the side effect lands. `externalRef` uses the adapter's own scheme.
+ * shape and signature are identical regardless of where the side effect lands.
+ * A real platform passes its returned id via `externalRef`; local adapters pass
+ * a `scheme` and the ref is derived deterministically from the idempotency key.
  */
 export function buildReceipt(
   params: ExecuteParams,
   adapterName: string,
-  externalRefScheme: string,
+  opts: ReceiptOptions = {},
 ): ExecutionReceipt {
-  const status: ExecutionReceipt['status'] = params.authorization.authorized
-    ? 'executed'
-    : 'blocked';
+  const status: ExecutionReceipt['status'] =
+    opts.status ?? (params.authorization.authorized ? 'executed' : 'blocked');
+  const externalRef =
+    status === 'executed'
+      ? opts.externalRef ??
+        (opts.scheme ?? 'ref') + '://' + params.platform + '/' + sha256(params.idempotencyKey).slice(7, 23)
+      : '';
   const body = {
     proposalId: params.decision.proposalId,
     decisionDigest: decisionDigest(params.decision),
@@ -198,10 +215,7 @@ export function buildReceipt(
     assetId: params.assetId,
     idempotencyKey: params.idempotencyKey,
     status,
-    externalRef:
-      status === 'executed'
-        ? externalRefScheme + '://' + params.platform + '/' + sha256(params.idempotencyKey).slice(7, 23)
-        : '',
+    externalRef,
     executedAt: params.now,
     adapter: adapterName,
   };
@@ -227,7 +241,7 @@ export class SimulatedAdapter implements PublicationAdapter {
   execute(params: ExecuteParams): ExecutionReceipt {
     const existing = this.receipts.get(params.idempotencyKey);
     if (existing) return existing; // idempotent: side effect happens at most once
-    const receipt = buildReceipt(params, this.name, 'sim');
+    const receipt = buildReceipt(params, this.name, { scheme: 'sim' });
     this.receipts.set(params.idempotencyKey, receipt);
     return receipt;
   }

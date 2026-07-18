@@ -27,12 +27,18 @@ may assert about Milestone 1. It is updated as capabilities land.
 | The public verifier vouches only for signers that have published to it. | `apps/verifier` trust anchor, `apps/verifier/test/verifier.test.ts` |
 | Perceptual image fingerprints survive re-encode, downscale and brightness shift. | `@origentra/media`, `test/perceptual.test.ts` |
 | All 13 SocialTrust-Bench KPIs pass on the reference harness (reproducible). | `bench/socialtrust-bench.ts`, `docs/SOCIALTRUST-BENCH.md` |
+| A resilient HTTP adapter (OAuth2, retry/backoff, timeout, idempotency header) publishes end-to-end against a mock platform. | `@origentra/adapters`, `test/http-adapter.test.ts` |
+| A network publish that is not confirmed throws a categorised error — it never signs a fake "executed" receipt. | `src/errors.ts`, `src/http-adapter.ts`, `test/http-adapter.test.ts` |
+| The LinkedIn UGC ShareContent body mapping is implemented and verified against a mock endpoint. | `src/linkedin.ts`, `test/http-adapter.test.ts` |
 
 ## Prohibited claims (NOT supported by this codebase)
 
-- ❌ "Origentra publishes to LinkedIn / YouTube / Instagram / TikTok." — the
-  only real adapter is `LocalPublishAdapter` (local filesystem); no network
-  platform adapter exists. `SimulatedAdapter` performs no I/O at all.
+- ❌ "Origentra publishes to the live LinkedIn / YouTube / Instagram / TikTok
+  APIs." — a real HTTP network adapter and a LinkedIn body mapping exist and are
+  verified against a **mock** platform, but nothing here has been run against a
+  live third-party API. Doing so requires the operator's own credentials and a
+  live endpoint. `LocalPublishAdapter` is real but local; `SimulatedAdapter` does
+  no I/O. (LinkedIn media shares are also not mapped — text only.)
 - ❌ "SocialTrust-Bench proves Origentra is secure / audited." — it is
   **self-measured** on a self-defined corpus (reproducibility/regression tool,
   not third-party audit; see `docs/SOCIALTRUST-BENCH.md`).

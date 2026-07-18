@@ -105,7 +105,7 @@ export class LocalPublishAdapter implements PublicationAdapter {
       return JSON.parse(readFileSync(path, 'utf8')) as ExecutionReceipt;
     }
 
-    const receipt = buildReceipt(params, this.name, 'local');
+    const receipt = buildReceipt(params, this.name, { scheme: 'local' });
 
     if (receipt.status === 'executed' && params.record) {
       this.store.add({

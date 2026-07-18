@@ -1,0 +1,13 @@
+{
+  "name": "@origentra/adapters",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Network publication adapters: OAuth2 token providers and a resilient HTTP adapter (retry, backoff, timeout, idempotency) behind the PublicationAdapter contract.",
+  "license": "MIT",
+  "author": "Frank Asante Van Laarhoven <frankleroyvan@gmail.com>",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

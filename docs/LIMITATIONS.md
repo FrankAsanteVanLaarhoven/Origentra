@@ -51,6 +51,18 @@ it is a boundary of what Milestone 1 claims.
   a later milestone. The local adapter's idempotency is per-directory; a
   clustered deployment needs a shared idempotency store.
 
+## Network adapters
+
+- `@origentra/adapters` provides a resilient HTTP adapter (OAuth2, retry/backoff,
+  timeout, idempotency) and a LinkedIn UGC body mapping. Both are verified
+  **against a mock platform only** — nothing has run against a live third-party
+  API, which needs the operator's credentials and a live endpoint.
+- Idempotency relies on the platform honouring the `Idempotency-Key` header.
+- No auto-refresh on a mid-flight `401`; the token provider refreshes proactively
+  on expiry and a `401` is treated as terminal.
+- LinkedIn: **text shares only**. Image/video shares need LinkedIn's separate
+  register-upload-attach media flow, which is not implemented.
+
 ## Persistence & verifier
 
 - The durable store is **file-backed JSONL** with in-memory indexes. It enforces

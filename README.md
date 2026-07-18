@@ -42,7 +42,7 @@ Run it:
 
 ```bash
 node apps/cli/origentra.ts demo      # the whole loop, end-to-end
-npm test                             # 72 tests across all packages
+npm test                             # 82 tests across all packages
 npm run bench                        # SocialTrust-Bench v0.1 (13 KPIs)
 npm run serve                        # Origentra Verify on http://localhost:8787
 ```
@@ -84,6 +84,10 @@ packages/store/         @origentra/store — durable tenant-isolated persistence
 packages/media/         @origentra/media — perceptual fingerprinting
     png.ts              zero-dependency PNG decode/encode (node:zlib)
     perceptual.ts       dHash + hamming/similarity (survives re-encode/resize/brightness)
+packages/adapters/      @origentra/adapters — network publication adapters
+    token.ts            OAuth2 token providers (static + client-credentials + cache)
+    http-adapter.ts     resilient HTTP adapter (retry/backoff/timeout/idempotency)
+    linkedin.ts         LinkedIn UGC body mapping (config-only; not run live)
 apps/cli/               reference CLI + end-to-end demo
 apps/verifier/          Origentra Verify — node:http public verifier + inline UI
 bench/                  SocialTrust-Bench v0.1 — 13-KPI reproducible harness
@@ -110,9 +114,11 @@ docs/                   CLAIMS · LIMITATIONS · THREAT-MODEL · SOCIALTRUST-BEN
 Per the project's own scope discipline (prove one narrow, complete loop first),
 these are later milestones and are **not** present or claimed:
 
-- **Network** platform integrations (LinkedIn, YouTube, Instagram, TikTok). The
-  only real adapter today is local-filesystem; credentialed network adapters are
-  Milestone 6.
+- **Live** platform integrations. The network adapter (OAuth2, retry, timeout,
+  idempotency) and a LinkedIn body mapping exist and are tested against a *mock*
+  platform — but nothing has run against a real LinkedIn/YouTube/Instagram/TikTok
+  API. That needs the operator's credentials and a live endpoint (Milestone 6b),
+  and LinkedIn media (non-text) shares are not yet mapped.
 - Cross-platform reuse / impersonation monitoring at scale (the "Sentinel"
   arms-race surface).
 - Perceptual hashing for **audio and video** (chromaprint, frame-hash sequences),
@@ -133,7 +139,8 @@ these are later milestones and are **not** present or claimed:
 | **3. Perceptual media** | zero-dep PNG codec + dHash (image survivability) | ✅ done |
 | **4. Real adapter** | non-simulated local publishing adapter behind the shared contract | ✅ done |
 | **5. SocialTrust-Bench v0.1** | 13-KPI reproducible benchmark, each mapped to a failure mode | ✅ done |
-| 6. Network platform adapters | one credentialed real adapter (LinkedIn/YouTube/…) | planned |
+| **6. Network adapter transport** | OAuth2 + retry/backoff/timeout/idempotency HTTP adapter + LinkedIn mapping, tested vs. a mock platform | ✅ done |
+| 6b. Live platform integration | run the LinkedIn/YouTube adapter against the real API with operator credentials | planned |
 | 7. Perceptual audio/video + enterprise controls | chromaprint/frame-hash, SAML/SCIM/CMK | planned |
 
 ## License
