@@ -95,6 +95,24 @@ test('an AI agent can never be a valid approver', () => {
   assert.ok(auth.reasons.includes('agent_cannot_approve'));
 });
 
+test('an approver from a different tenant can never authorise (tenant isolation)', () => {
+  const { decision, world, ctx } = highRiskScene();
+  // A fully valid, trusted, scoped human approver — but in another tenant.
+  const foreign = makeIdentity(world, {
+    identityId: 'foreign-approver',
+    tenantId: 'tenant-2',
+    subjectType: 'person',
+    scopes: ['publish:approve'],
+  });
+  const approval = approve(decision, foreign, world.issuerKey, T1);
+  const auth = authorize(decision, [approval], {
+    ...ctx,
+    approverIdentities: { 'foreign-approver': foreign },
+  });
+  assert.equal(auth.authorized, false);
+  assert.ok(auth.reasons.includes('approver_wrong_tenant'));
+});
+
 test('an approval for a different decision is rejected (stale/forged binding)', () => {
   const { decision, approver, world, ctx } = highRiskScene();
   const approval = approve(decision, approver, world.issuerKey, T1);

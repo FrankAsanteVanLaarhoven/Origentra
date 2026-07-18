@@ -19,3 +19,4 @@ export * from './rights.ts';
 export * from './policy.ts';
 export * from './execution.ts';
 export * from './audit.ts';
+export * from './evidence.ts';

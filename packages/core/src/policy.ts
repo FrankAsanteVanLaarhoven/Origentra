@@ -58,6 +58,8 @@ export interface PolicyCheck {
 
 export interface PolicyDecision {
   proposalId: string;
+  /** Tenant the decision belongs to; approvals must come from this tenant. */
+  tenantId: string;
   decision: Decision;
   /** Risk in [0,6] with the factors that produced it. */
   risk: number;
@@ -215,6 +217,7 @@ export function evaluatePolicy(input: PolicyInput, ctx: PolicyContext): PolicyDe
 
   return {
     proposalId: input.proposalId,
+    tenantId: input.tenantId,
     decision,
     risk,
     riskFactors: factors,

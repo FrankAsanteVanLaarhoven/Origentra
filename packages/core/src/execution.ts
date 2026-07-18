@@ -97,6 +97,11 @@ export function authorize(
       reasons.push('approver_identity_unknown');
       continue;
     }
+    if (idClaim.claim.tenantId !== decision.tenantId) {
+      // Tenant isolation: an approver may only authorise their own tenant.
+      reasons.push('approver_wrong_tenant');
+      continue;
+    }
     if (idClaim.claim.subjectType === 'agent') {
       reasons.push('agent_cannot_approve');
       continue;

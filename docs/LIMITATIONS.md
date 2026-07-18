@@ -10,10 +10,16 @@ it is a boundary of what Milestone 1 claims.
   of embedded data. It does **not** survive transformations that change every
   byte while preserving perceptual content — image re-encoding, resizing,
   colour-space changes, audio resampling, video transcoding.
-- Domain-specific perceptual hashing (pHash/dHash for images, chromaprint for
-  audio, frame-hash sequences for video) is the production path for those media
-  and is **not implemented**. The `Fingerprint` interface is designed to carry
-  multiple algorithms so these slot in without a schema change.
+- Perceptual **image** hashing (dHash) is implemented in `@origentra/media` and
+  survives re-encode, downscale and brightness shift; it is **not** robust to
+  heavy crop, rotation or flips. Perceptual hashing for **audio** (chromaprint)
+  and **video** (frame-hash sequences) is the production path for those media and
+  is **not implemented**. The `Fingerprint` interface carries multiple algorithms
+  so these slot in without a schema change.
+- **Global text rewrites** (normalizing all whitespace or case) change nearly
+  every byte and are known-hard for CDC — SocialTrust-Bench reports ~0% recovery
+  for them (transparently, un-gated). A perceptual/normalizing text fingerprint
+  is the fix and is not yet implemented.
 - The default chunk parameters are tuned for small text/data assets in tests.
   Real deployments must tune `maskBits`/`min`/`maxChunk` per media type and
   publish the parameters (they are part of interoperability).
@@ -39,8 +45,26 @@ it is a boundary of what Milestone 1 claims.
 - Risk scoring (0–6) uses a fixed, transparent factor model. It is a *policy
   default*, not an empirically validated risk model; organisations are expected
   to configure it. The mapping is deliberately explainable rather than learned.
-- The platform adapter is **simulated**. Idempotency is enforced in-process via
-  an in-memory map; a durable deployment needs a persistent idempotency store.
+- Two adapters exist: `SimulatedAdapter` (in-memory, no I/O) and the real
+  `LocalPublishAdapter` (filesystem, crash-safe on-disk idempotency). Neither
+  posts to a third-party **network** platform — that requires credentials and is
+  a later milestone. The local adapter's idempotency is per-directory; a
+  clustered deployment needs a shared idempotency store.
+
+## Persistence & verifier
+
+- The durable store is **file-backed JSONL** with in-memory indexes. It enforces
+  the tenant-isolation contract (fuzzy recovery is tenant-scoped) but is not a
+  hardened database; production uses PostgreSQL with row-level security.
+- The public verifier's trust anchor is "signers that have published to this
+  instance." That is honest but narrow; a real deployment federates trust across
+  issuers and publishes revocation status.
+
+## Benchmark
+
+- SocialTrust-Bench is **self-measured** on a self-defined, deterministic corpus.
+  It proves reproducibility and catches regressions; it is not third-party audit.
+  Independent replication on an external corpus is the goal.
 
 ## Audit
 
@@ -58,6 +82,6 @@ it is a boundary of what Milestone 1 claims.
 
 ## Not present at all (see README "Deliberately not built yet")
 
-Web UI / public verifier site, multi-tenant persistence, cross-platform reuse
-monitoring, deepfake detection, real platform integrations, enterprise controls
-(SAML/SCIM/CMK/data-residency), and the SocialTrust-Bench harness.
+Cross-platform reuse / impersonation monitoring at scale, deepfake / synthetic-
+media detection, credentialed **network** platform integrations, audio/video
+perceptual hashing, and enterprise controls (SAML/SCIM/CMK/data-residency).

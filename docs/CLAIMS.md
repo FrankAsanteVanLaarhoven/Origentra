@@ -21,11 +21,23 @@ may assert about Milestone 1. It is updated as capabilities land.
 | Execution is idempotent (one side effect per idempotency key). | `src/execution.ts`, `test/execution.test.ts` |
 | The audit log is tamper-evident (any edit/re-order breaks the chain). | `src/audit.ts`, `test/audit.test.ts` |
 | The core has zero runtime dependencies. | `package.json`, `packages/core/package.json` (`dependencies: {}`) |
+| Persistence is tenant-isolated: one tenant cannot recover/enumerate another's assets. | `@origentra/store` `DurableManifestStore`, `test/manifests.test.ts` |
+| An approver from another tenant can never authorise a publication. | `src/execution.ts` (`approver_wrong_tenant`), `test/execution.test.ts` |
+| A real (non-simulated) local adapter publishes with crash-safe on-disk idempotency. | `@origentra/store` `LocalPublishAdapter`, `test/publish.test.ts` |
+| The public verifier vouches only for signers that have published to it. | `apps/verifier` trust anchor, `apps/verifier/test/verifier.test.ts` |
+| Perceptual image fingerprints survive re-encode, downscale and brightness shift. | `@origentra/media`, `test/perceptual.test.ts` |
+| All 13 SocialTrust-Bench KPIs pass on the reference harness (reproducible). | `bench/socialtrust-bench.ts`, `docs/SOCIALTRUST-BENCH.md` |
 
 ## Prohibited claims (NOT supported by this codebase)
 
 - ❌ "Origentra publishes to LinkedIn / YouTube / Instagram / TikTok." — the
-  adapter is **simulated** and performs no network I/O (`SimulatedAdapter`).
+  only real adapter is `LocalPublishAdapter` (local filesystem); no network
+  platform adapter exists. `SimulatedAdapter` performs no I/O at all.
+- ❌ "SocialTrust-Bench proves Origentra is secure / audited." — it is
+  **self-measured** on a self-defined corpus (reproducibility/regression tool,
+  not third-party audit; see `docs/SOCIALTRUST-BENCH.md`).
+- ❌ "Provenance survives any text transformation." — global rewrites
+  (whitespace/case normalization) are known-hard for CDC and score ~0%.
 - ❌ "Origentra determines legal ownership / clears rights conclusively." — it
   manages **assertions and evidence**, not legal determinations.
 - ❌ "Origentra detects deepfakes / synthetic media." — no synthetic-media

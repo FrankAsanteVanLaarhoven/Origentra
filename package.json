@@ -16,6 +16,7 @@
   "scripts": {
     "test": "node --test 'packages/*/test/*.test.ts' 'apps/*/test/*.test.ts'",
     "serve": "node apps/verifier/server.ts",
+    "bench": "node bench/socialtrust-bench.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "cli": "node apps/cli/origentra.ts",
     "demo": "node apps/cli/origentra.ts demo"

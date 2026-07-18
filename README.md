@@ -42,7 +42,9 @@ Run it:
 
 ```bash
 node apps/cli/origentra.ts demo      # the whole loop, end-to-end
-node --test 'packages/core/test/*.test.ts'   # 50 tests
+npm test                             # 72 tests across all packages
+npm run bench                        # SocialTrust-Bench v0.1 (13 KPIs)
+npm run serve                        # Origentra Verify on http://localhost:8787
 ```
 
 Other CLI commands operate on real files:
@@ -75,8 +77,17 @@ packages/core/          @origentra/core — the open reference implementation
     policy.ts           Origentra Control — the DETERMINISTIC policy engine (risk 0–6)
     execution.ts        governed execution — approvals, authorisation, idempotent receipts
     audit.ts            tamper-evident append-only hash-chained log
+    evidence.ts         Origentra Response — incident evidence packs + completeness
+packages/store/         @origentra/store — durable tenant-isolated persistence
+    manifests.ts        append-only passport store; recover() is tenant-scoped
+    publish.ts          real LocalPublishAdapter (fs I/O, crash-safe idempotency)
+packages/media/         @origentra/media — perceptual fingerprinting
+    png.ts              zero-dependency PNG decode/encode (node:zlib)
+    perceptual.ts       dHash + hamming/similarity (survives re-encode/resize/brightness)
 apps/cli/               reference CLI + end-to-end demo
-docs/                   CLAIMS · LIMITATIONS · THREAT-MODEL · ADRs
+apps/verifier/          Origentra Verify — node:http public verifier + inline UI
+bench/                  SocialTrust-Bench v0.1 — 13-KPI reproducible harness
+docs/                   CLAIMS · LIMITATIONS · THREAT-MODEL · SOCIALTRUST-BENCH · ADRs
 ```
 
 ### Design commitments
@@ -99,14 +110,17 @@ docs/                   CLAIMS · LIMITATIONS · THREAT-MODEL · ADRs
 Per the project's own scope discipline (prove one narrow, complete loop first),
 these are later milestones and are **not** present or claimed:
 
-- Real platform integrations (LinkedIn, YouTube, Instagram, TikTok).
+- **Network** platform integrations (LinkedIn, YouTube, Instagram, TikTok). The
+  only real adapter today is local-filesystem; credentialed network adapters are
+  Milestone 6.
 - Cross-platform reuse / impersonation monitoring at scale (the "Sentinel"
   arms-race surface).
-- Domain-specific perceptual hashing (pHash for images, chromaprint for audio,
-  frame-hash sequences for video). The current fingerprint survives byte-level
-  edits, not re-encoding — see [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
-- Web UI / public verifier site, multi-tenant persistence, enterprise controls
-  (SAML/SCIM/CMK), and the SocialTrust-Bench harness.
+- Perceptual hashing for **audio and video** (chromaprint, frame-hash sequences),
+  and image robustness to heavy crop/rotation. Image re-encode/resize/brightness
+  are covered; see [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
+- Enterprise controls (SAML/SCIM/CMK/data-residency), a hardened database with
+  row-level security (the reference store is file-backed but enforces the same
+  isolation contract), and independent third-party benchmark replication.
 
 ---
 
@@ -114,11 +128,13 @@ these are later milestones and are **not** present or claimed:
 
 | Milestone | Scope | Status |
 | --- | --- | --- |
-| **1. Trust core** | identity, passport, provenance, rights, policy, execution, audit — real crypto, tested | ✅ this repo |
-| 2. Public verifier + persistence | web verifier, durable manifest/fingerprint store, RLS tenancy | planned |
-| 3. SocialTrust-Bench v0.1 | reproducible provenance-survivability + adversarial policy benchmark | planned |
-| 4. Perceptual media | image/audio/video perceptual fingerprints | planned |
-| 5. Platform adapters | one real adapter behind the same interface | planned |
+| **1. Trust core** | identity, passport, provenance, rights, policy, execution, audit — real crypto, tested | ✅ done |
+| **2. Public verifier + persistence** | node:http verifier, durable tenant-isolated store | ✅ done |
+| **3. Perceptual media** | zero-dep PNG codec + dHash (image survivability) | ✅ done |
+| **4. Real adapter** | non-simulated local publishing adapter behind the shared contract | ✅ done |
+| **5. SocialTrust-Bench v0.1** | 13-KPI reproducible benchmark, each mapped to a failure mode | ✅ done |
+| 6. Network platform adapters | one credentialed real adapter (LinkedIn/YouTube/…) | planned |
+| 7. Perceptual audio/video + enterprise controls | chromaprint/frame-hash, SAML/SCIM/CMK | planned |
 
 ## License
 
