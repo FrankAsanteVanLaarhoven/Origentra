@@ -1,0 +1,13 @@
+{
+  "name": "@origentra/media",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Perceptual media fingerprinting: zero-dependency PNG codec and dHash for provenance survivability across re-encoding, resize and brightness changes.",
+  "license": "MIT",
+  "author": "Frank Asante Van Laarhoven <frankleroyvan@gmail.com>",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

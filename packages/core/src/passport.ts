@@ -19,6 +19,7 @@ import type {
   VerificationResult,
   VerificationState,
   AiInvolvement,
+  Fingerprint,
 } from './types.ts';
 import type { TrustStore } from './trust.ts';
 
@@ -31,6 +32,12 @@ export interface PassportInput {
   aiInvolvement: AiInvolvement;
   rights?: RightsRecord[];
   transformations?: Transformation[];
+  /**
+   * Additional fingerprints to attach (e.g. a perceptual dHash from
+   * @origentra/media). Core stays media-free; callers supply domain-specific
+   * fingerprints. The always-present CDC fingerprint is added automatically.
+   */
+  extraFingerprints?: Fingerprint[];
 }
 
 /** Build and sign a Content Passport for the given asset bytes. */
@@ -50,7 +57,7 @@ export function createPassport(
     creatorIdentityId: input.creatorIdentityId,
     aiInvolvement: input.aiInvolvement,
     rights: input.rights ?? [],
-    fingerprints: [makeFingerprint(buf)],
+    fingerprints: [makeFingerprint(buf), ...(input.extraFingerprints ?? [])],
     transformations: input.transformations ?? [],
   };
   const signature = sign(signer.privateKeyPem, canonicalBytes(manifest));
