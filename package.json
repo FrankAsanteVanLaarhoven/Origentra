@@ -1,0 +1,24 @@
+{
+  "name": "origentra",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Origentra Passport OS — the trusted control plane for digital content. Verify identity, prove provenance, govern publication, preserve evidence.",
+  "license": "MIT",
+  "author": "Frank Asante Van Laarhoven <frankleroyvan@gmail.com>",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "node --test 'packages/core/test/*.test.ts'",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "cli": "node apps/cli/origentra.ts",
+    "demo": "node apps/cli/origentra.ts demo"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

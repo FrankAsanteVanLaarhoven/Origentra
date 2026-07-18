@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+.env
+.env.*
+coverage/
+
+# Local key material and scratch artifacts must never be committed.
+*.key
+*.pem
+.origentra/
+scratch/
