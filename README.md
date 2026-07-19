@@ -15,6 +15,9 @@ scheduler, dashboard or caption generator.
 > This repository is an independent project. It is unrelated to, and shares no
 > code with, any other application in this workspace.
 
+**New here?** Read **[`docs/OVERVIEW.md`](docs/OVERVIEW.md)** — the full platform
+narrative tying all 13 packages together for stakeholders.
+
 ---
 
 ## What is real in this repository (Milestone 1)
