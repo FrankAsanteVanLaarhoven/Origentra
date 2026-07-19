@@ -17,10 +17,12 @@ published, preserves *how* content was created, detects misuse, and supports
 accountable response — as an **infrastructure layer** other tools, creators,
 agencies, enterprises and platforms build on, not another scheduler or dashboard.
 
-The reference implementation is **13 zero-dependency TypeScript packages** and
-**4 applications** running on the Node.js standard library, exercised by **183
-tests** and a **23-KPI reproducible benchmark**, every one of which maps to a
-specific failure mode.
+The reference implementation is **13 zero-dependency TypeScript packages**
+running on the Node.js standard library, plus a set of applications, exercised by
+**183 tests** and a **23-KPI reproducible benchmark**, every one of which maps to
+a specific failure mode. (One app — `dashboard` — is a conventional Next.js
+frontend with its own dependencies; the **13 core packages remain
+zero-dependency**, which is the property that matters for a signing/trust library.)
 
 ## 2. The thesis
 
@@ -60,7 +62,7 @@ for a security/signing system, and a clean interoperability reference).
 | `@origentra/detectors` | Reuse (text/image/**audio**/**video**) + impersonation (homoglyph/likeness) → signed Sentinel signals |
 | `@origentra/enterprise` | Customer-managed keys, OIDC/JWT SSO, SCIM provisioning, legal hold, SIEM export |
 | `@origentra/enrolment` | Biometric **consent gate**: granular signed consent, consent-gated references, withdrawal → crypto-shred |
-| **apps** | `verifier` (public verification), `witness` (checkpoint cosigning), `scim` (provisioning), `cli`/`publisher` (demo + governed go-live) |
+| **apps** | `verifier` (public verification), `witness` (checkpoint cosigning), `scim` (provisioning), `cli`/`publisher` (demo + governed go-live), `dashboard` (Next.js control-plane UI) |
 
 ## 5. The complete control loop (the vertical slice)
 

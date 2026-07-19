@@ -14,3 +14,8 @@ scratch/
 
 # Generated benchmark reports (methodology + harness are committed; outputs are not)
 bench/reports/
+
+# Next.js dashboard
+.next/
+.turbo/
+apps/dashboard/.next/
