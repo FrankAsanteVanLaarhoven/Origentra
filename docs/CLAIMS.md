@@ -45,6 +45,10 @@ may assert about Milestone 1. It is updated as capabilities land.
 | Reports, appeals and adjudications are transparency-logged (append-only). | `src/exchange.ts` (log), `test/exchange.test.ts` |
 | The exchange is recommend-only: its output carries evidence + a disclaimer and never an enforcement verdict field. | `test/exchange.test.ts`, SocialTrust-Bench "Recommend-only invariant" |
 | Sock-puppet linkage yields confidence-scored clusters (evidence of correlation, not a hard identity claim). | `src/linkage.ts`, `test/linkage.test.ts` |
+| Reused-content detection flags exact copies (certain) and transformed copies (near-match) across accounts, never the owner's own content. | `@origentra/detectors` `reuse.ts`, `test/reuse.test.ts` |
+| Impersonation detection catches homoglyph/typosquat handles and perceptual likeness; identical names alone are inconclusive. | `src/impersonation.ts`, `test/impersonation.test.ts` |
+| A positive detection bridges to a signed Sentinel signal; a detector alone is single_source, never corroborated. | `src/report.ts`, `test/bridge.test.ts` |
+| On the synthetic bench: reuse recall 100%, detector false-positive rate 0% on unrelated content. | SocialTrust-Bench "Reuse-detection recall" / "Detector false-positive rate" |
 
 ## Prohibited claims (NOT supported by this codebase)
 
@@ -86,9 +90,14 @@ may assert about Milestone 1. It is updated as capabilities land.
   probabilistic correlation, not a conclusive identity determination.
 - ❌ "A single report (or one reporter) is a corroborated signal." — corroboration
   requires a quorum of *distinct* trusted reporters.
-- ❌ "Origentra detects abuse / fake accounts." — it ships **no detectors**;
-  reports come from external detection or human review. It provides accountability,
-  quorum and appeal around those reports, and detection is never certain.
+- ❌ "A detector proves theft / impersonation / that an account is malicious." —
+  a detector emits *evidence* with confidence and benign alternatives; a match is
+  evidence of reuse/similarity, not proof of intent. Near-matches carry false
+  positives, the safe default is `inconclusive`, and a detector alone never
+  corroborates (Sentinel quorum + appeal still apply).
+- ❌ "Origentra detects abuse across all media." — the detectors cover text/CDC
+  and image (perceptual) reuse plus handle/likeness impersonation; audio, video,
+  and at-scale cross-platform monitoring are not built.
 - ❌ Any certification/compliance claim (SOC 2, ISO, GDPR-certified, etc.) — none
   has been independently obtained.
 

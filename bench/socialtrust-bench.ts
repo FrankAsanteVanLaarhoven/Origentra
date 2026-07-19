@@ -52,6 +52,7 @@ import {
   signAdjudication,
   type AbuseTarget,
 } from '../packages/sentinel/src/index.ts';
+import { ReuseIndex, ImpersonationIndex } from '../packages/detectors/src/index.ts';
 import {
   imageFingerprintRaw,
   perceptualSimilarity,
@@ -538,6 +539,53 @@ function kpiRecommendOnly() {
   record({ kpi: 'Recommend-only invariant', failureMode: 'exchange emits an enforcement verdict', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} summaries carry evidence + disclaimer, no verdict field` });
 }
 
+// ---- KPI 18+19: detector recall and false-positive rate --------------------
+
+function kpiDetectors() {
+  const idx = new ReuseIndex();
+  const N = 40;
+  for (let i = 0; i < N; i++) idx.addRaw(`a${i}`, 'alice', textAsset(i), 'text/plain');
+
+  const transforms: ((s: string) => string)[] = [
+    (s) => s,
+    (s) => s + ' reposted elsewhere',
+    (s) => 'RE: ' + s,
+    (s) => s.replace('protected', 'PROTECTED'),
+  ];
+  let recallHits = 0;
+  let recallTotal = 0;
+  for (let i = 0; i < N; i++) {
+    for (const t of transforms) {
+      recallTotal++;
+      const d = idx.detect({ subjectId: 'x', publisherIdentityId: 'bob', bytes: t(textAsset(i)), contentType: 'text/plain' });
+      if (d.disposition === 'match' || d.disposition === 'near_match') recallHits++;
+    }
+  }
+
+  let falsePos = 0;
+  const fpTotal = N;
+  for (let i = 0; i < N; i++) {
+    const d = idx.detect({ subjectId: 'x', publisherIdentityId: 'bob', bytes: `An unrelated essay number ${i} about sailing, boats and the open ocean. `.repeat(8), contentType: 'text/plain' });
+    if (d.disposition !== 'no_match') falsePos++;
+  }
+
+  // Impersonation look-alike recall.
+  const imp = new ImpersonationIndex().add({ id: 'brand', names: ['PayPal'], domains: ['paypal.com'] });
+  const lookalikes = ['PayPa1', 'P4yPal', 'pаypal.com', 'paypall.com'];
+  let impHits = 0;
+  for (const l of lookalikes) {
+    const d = l.includes('.')
+      ? imp.detectHandle({ subjectId: 'x', domain: l })
+      : imp.detectHandle({ subjectId: 'x', name: l });
+    if (d.disposition !== 'no_match') impHits++;
+  }
+
+  const recall = recallHits / recallTotal;
+  const fpRate = falsePos / fpTotal;
+  record({ kpi: 'Reuse-detection recall', failureMode: 'stolen/reused content goes undetected', value: recall * 100, unit: '%', target: '>=95%', pass: recall >= 0.95, hardGate: false, detail: `impersonation look-alikes ${impHits}/${lookalikes.length}` });
+  record({ kpi: 'Detector false-positive rate', failureMode: 'unrelated content wrongly flagged', value: fpRate * 100, unit: '%', target: '<=1%', pass: fpRate <= 0.01, hardGate: true, detail: `${falsePos}/${fpTotal} unrelated flagged` });
+}
+
 // ---- run + report -----------------------------------------------------------
 
 function run() {
@@ -557,6 +605,7 @@ function run() {
   kpiWitness();
   kpiAbuseSignals();
   kpiRecommendOnly();
+  kpiDetectors();
   const durationMs = Number(process.hrtime.bigint() - started) / 1e6;
 
   // Table

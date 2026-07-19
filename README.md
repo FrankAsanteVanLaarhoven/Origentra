@@ -42,8 +42,8 @@ Run it:
 
 ```bash
 node apps/cli/origentra.ts demo      # the whole loop, end-to-end
-npm test                             # 122 tests across all packages
-npm run bench                        # SocialTrust-Bench v0.1 (17 KPIs)
+npm test                             # 138 tests across all packages
+npm run bench                        # SocialTrust-Bench v0.1 (19 KPIs)
 npm run serve                        # Origentra Verify on http://localhost:8787
 ```
 
@@ -100,10 +100,14 @@ packages/sentinel/      @origentra/sentinel — recommend-only abuse-signal exch
     report.ts           signed reports/appeals/adjudications/linkage
     linkage.ts          sock-puppet cluster graph (confidence-scored evidence)
     exchange.ts         quorum-gated, appealable, transparency-logged; NO verdict
+packages/detectors/     @origentra/detectors — abuse detectors that feed Sentinel
+    reuse.ts            reused/stolen-content detection (digest + CDC + perceptual)
+    impersonation.ts    homoglyph/typosquat handles + perceptual likeness
+    report.ts           bridge: positive detection → signed Sentinel signal
 apps/cli/               reference CLI + end-to-end demo
 apps/witness/           Origentra Witness — node:http witness service
 apps/verifier/          Origentra Verify — node:http public verifier + inline UI
-bench/                  SocialTrust-Bench v0.1 — 17-KPI reproducible harness
+bench/                  SocialTrust-Bench v0.1 — 19-KPI reproducible harness
 docs/                   CLAIMS · LIMITATIONS · THREAT-MODEL · SOCIALTRUST-BENCH · ADRs
 ```
 
@@ -135,11 +139,10 @@ these are later milestones and are **not** present or claimed:
   platform — but nothing has run against a real LinkedIn/YouTube/Instagram/TikTok
   API. That needs the operator's credentials and a live endpoint (Milestone 6b),
   and LinkedIn media (non-text) shares are not yet mapped.
-- Automated abuse **detectors** and cross-platform reuse / impersonation
-  monitoring *at scale*. The recommend-only abuse-signal *exchange* (accountability,
-  quorum, appeal, transparency-logging) is built; the detectors that feed it, and
-  large-scale monitoring, are not — reports come from external detection or human
-  review.
+- Cross-platform reuse / impersonation monitoring *at scale*. The detectors
+  (reused-content + impersonation) and the recommend-only exchange are built and
+  tested, but large-scale continuous monitoring across platforms — and detectors
+  for **audio/video** — are not.
 - Perceptual hashing for **audio and video** (chromaprint, frame-hash sequences),
   and image robustness to heavy crop/rotation. Image re-encode/resize/brightness
   are covered; see [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
@@ -157,15 +160,16 @@ these are later milestones and are **not** present or claimed:
 | **2. Public verifier + persistence** | node:http verifier, durable tenant-isolated store | ✅ done |
 | **3. Perceptual media** | zero-dep PNG codec + dHash (image survivability) | ✅ done |
 | **4. Real adapter** | non-simulated local publishing adapter behind the shared contract | ✅ done |
-| **5. SocialTrust-Bench v0.1** | 17-KPI reproducible benchmark, each mapped to a failure mode | ✅ done |
+| **5. SocialTrust-Bench v0.1** | 19-KPI reproducible benchmark, each mapped to a failure mode | ✅ done |
 | **6. Network adapter transport** | OAuth2 + retry/backoff/timeout/idempotency HTTP adapter + LinkedIn mapping, tested vs. a mock platform | ✅ done |
 | **7. Transparency log + revocation** | RFC 6962 Merkle log, signed checkpoints, inclusion/consistency proofs, trust-gated revocation consulted by the verifier | ✅ done |
 | **8. Witnessing + durable log** | witness cosigning (refuses non-append-only heads), fork/split-view detection, file-backed durable log | ✅ done |
 | **8b. Gossip transport + anchoring** | HTTP witness service, client transport, checkpoint distribution, split-view auditor, local checkpoint anchor | ✅ done |
 | **9. Abuse-signal exchange** | recommend-only, quorum-gated, appealable, transparency-logged evidence sharing + sock-puppet linkage — never a verdict | ✅ done |
+| **10. Abuse detectors** | reused/stolen-content (digest + CDC + perceptual) + impersonation (homoglyph/typosquat + likeness), bridging to signed Sentinel signals | ✅ done |
 | 6b. Live platform integration | run the LinkedIn/YouTube adapter against the real API with operator credentials | planned |
 | 8c. Witness federation + on-chain anchor | deployed multi-operator witnesses, discovery/registry, external anchoring, Postgres RLS | planned |
-| 10. Perceptual audio/video + enterprise controls | chromaprint/frame-hash, SAML/SCIM/CMK | planned |
+| 11. Perceptual audio/video + enterprise controls | chromaprint/frame-hash, SAML/SCIM/CMK | planned |
 
 ## License
 

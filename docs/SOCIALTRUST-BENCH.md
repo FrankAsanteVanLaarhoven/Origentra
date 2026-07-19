@@ -40,6 +40,8 @@ this harness", nothing more.
 | Witness fork detection | forked / split-view log accepted | 100% | hard |
 | Abuse-signal integrity | false/weaponised flag treated as corroborated | 100% | hard |
 | Recommend-only invariant | exchange emits an enforcement verdict | 100% | hard |
+| Reuse-detection recall | stolen/reused content undetected | ≥95% | soft |
+| Detector false-positive rate | unrelated content wrongly flagged | ≤1% | hard |
 
 ## What the registered/stress split means
 

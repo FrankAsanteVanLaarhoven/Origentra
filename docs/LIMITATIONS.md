@@ -120,10 +120,15 @@ This is the highest-risk capability; its limitations are safety-critical.
   evidence and is accountable for its own decision. This is a mitigation for GDPR
   Article 22 (no solely-automated decisions with significant effect) and for
   defamation exposure — do not remove it.
-- **No detectors ship here.** Origentra provides accountability (signed reports),
-  quorum, appeal and transparency-logging *around* abuse reports; the reports
-  themselves come from external detection or human review. Detection is an arms
-  race with real false positives; the safe default is insufficient evidence.
+- **Detectors are evidence producers, not judges.** `@origentra/detectors` ships
+  reused-content detection (digest + CDC + perceptual) and impersonation
+  (homoglyph/typosquat handles + perceptual likeness). Each emits a confidence, an
+  explicit `inconclusive`/`no_match` state, benign alternatives and its own
+  limitations. Caveats: the corpus is not exhaustive; CDC/perceptual/homoglyph
+  matching all have false positives; the confusables map is a *curated subset* of
+  the Unicode confusables, not the full set; perceptual likeness is not identity;
+  and audio/video and at-scale monitoring are not implemented. A detection alone
+  is `single_source` in Sentinel — quorum + appeal remain the backstops.
 - **Quorum ≠ truth.** Corroboration means a quorum of distinct *trusted* reporters
   agreed — a colluding quorum of trusted reporters is bounded only by the quorum,
   not by reputation. Reporter-reputation weighting is not implemented.

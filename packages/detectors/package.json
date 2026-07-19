@@ -1,0 +1,13 @@
+{
+  "name": "@origentra/detectors",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Abuse detectors that feed Sentinel: reused/stolen-content and impersonation (homoglyph handles + perceptual likeness). Produce evidence + confidence, never verdicts.",
+  "license": "MIT",
+  "author": "Frank Asante Van Laarhoven <frankleroyvan@gmail.com>",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
