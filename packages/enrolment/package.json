@@ -1,0 +1,13 @@
+{
+  "name": "@origentra/enrolment",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Biometric enrolment & consent: granular signed consent, consent-gated detection references, and withdrawal → crypto-shred. Implements the Article 9 privacy-by-design gate.",
+  "license": "MIT",
+  "author": "Frank Asante Van Laarhoven <frankleroyvan@gmail.com>",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

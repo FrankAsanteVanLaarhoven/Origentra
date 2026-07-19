@@ -45,6 +45,7 @@ this harness", nothing more.
 | AV reuse detection | audio/video copy undetected or unrelated flagged | 100% | hard |
 | CMK envelope integrity | customer-managed encryption fails or leaks | 100% | hard |
 | SSO token validation | invalid/forged SSO token accepted | 100% | hard |
+| Consent gating & crypto-shred | biometric reference used without consent or after withdrawal | 100% | hard |
 
 ## What the registered/stress split means
 

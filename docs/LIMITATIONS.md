@@ -165,6 +165,21 @@ This is the highest-risk capability; its limitations are safety-critical.
 - **PostgreSQL with row-level security** is deferred — the durable stores are
   file-backed and enforce the same tenant-isolation contract in the meantime.
 
+## Biometric enrolment & consent
+
+- `@origentra/enrolment` implements the *consenting-subject* privacy-by-design
+  gate: granular signed consent, CMK-encrypted hash-only references retrievable
+  only while consent is active, and withdrawal → crypto-shred.
+- **It does not establish a lawful basis.** The Article 9 condition for comparing
+  against a *non-consenting* suspected impersonator (substantial public interest +
+  APD) is a legal/DPO decision — see the private governance documents. This code
+  handles consent, minimisation and reversibility only.
+- **Crypto-shred** deletes the ciphertext + wrapped DEK in the registry (no
+  plaintext copy). Backed-up ciphertext requires a per-enrolment key whose
+  destruction shreds backups too.
+- Consent is verified by signature; a production system also binds the key to a
+  verified subject identity and, for minors, verified guardian age-assurance.
+
 ## Not present at all (see README "Deliberately not built yet")
 
 Cross-platform reuse / impersonation monitoring at scale, deepfake / synthetic-

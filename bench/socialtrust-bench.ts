@@ -54,6 +54,7 @@ import {
 } from '../packages/sentinel/src/index.ts';
 import { ReuseIndex, ImpersonationIndex, AudioReuseIndex, VideoReuseIndex } from '../packages/detectors/src/index.ts';
 import { LocalKeyProvider, encrypt, decrypt, rewrap, Jwks, verifyIdToken, signIdToken } from '../packages/enterprise/src/index.ts';
+import { EnrolmentRegistry, signConsent, signWithdrawal } from '../packages/enrolment/src/index.ts';
 import {
   imageFingerprintRaw,
   perceptualSimilarity,
@@ -689,6 +690,35 @@ function kpiSso() {
   record({ kpi: 'SSO token validation', failureMode: 'invalid/forged SSO token accepted', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} valid-accept + expired/aud/forged-reject` });
 }
 
+// ---- KPI 23: biometric consent gating & crypto-shred -----------------------
+
+function kpiEnrolment() {
+  let checks = 0;
+  let correct = 0;
+  for (let i = 0; i < 20; i++) {
+    const kms = LocalKeyProvider.generate();
+    const reg = new EnrolmentRegistry(kms, { now: () => T0 });
+    const subjectKey = generateKeyPair();
+    const face = () => imageFingerprintRaw(makeImage(64, 64, (x, y) => pattern(x + i * 0.1, y)));
+
+    // 1. No consent -> enrolment refused.
+    checks++;
+    if (!reg.enrol('s', 'face', face()).accepted) correct++;
+
+    // 2. Consent -> reference retrievable.
+    reg.recordConsent(signConsent({ subjectId: 's', modalities: ['face'], purpose: 'protection', noticeVersion: 'v1', consentedAt: T0 }, subjectKey));
+    const { enrolmentId } = reg.enrol('s', 'face', face());
+    checks++;
+    if (reg.referenceFor(enrolmentId!)) correct++;
+
+    // 3. Withdrawal -> crypto-shred: reference gone and marked shredded.
+    reg.withdraw(signWithdrawal({ subjectId: 's', modalities: ['face'], withdrawnAt: T0 }, subjectKey));
+    checks++;
+    if (!reg.referenceFor(enrolmentId!) && reg.isShredded(enrolmentId!)) correct++;
+  }
+  record({ kpi: 'Consent gating & crypto-shred', failureMode: 'biometric reference used without consent or after withdrawal', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} no-consent-refused + consented-available + withdrawn-shredded` });
+}
+
 // ---- run + report -----------------------------------------------------------
 
 function run() {
@@ -712,6 +742,7 @@ function run() {
   kpiAvDetectors();
   kpiCmk();
   kpiSso();
+  kpiEnrolment();
   const durationMs = Number(process.hrtime.bigint() - started) / 1e6;
 
   // Table

@@ -42,8 +42,8 @@ Run it:
 
 ```bash
 node apps/cli/origentra.ts demo      # the whole loop, end-to-end
-npm test                             # 172 tests (+1 gated live) across all packages
-npm run bench                        # SocialTrust-Bench v0.1 (22 KPIs)
+npm test                             # 183 tests (+1 gated live) across all packages
+npm run bench                        # SocialTrust-Bench v0.1 (23 KPIs)
 npm run serve                        # Origentra Verify on http://localhost:8787
 ```
 
@@ -113,12 +113,15 @@ packages/enterprise/    @origentra/enterprise — enterprise controls
     sso.ts              OIDC/JWT ID-token verification → scoped identity
     scim.ts             SCIM 2.0 provisioning (issue/revoke identities)
     governance.ts       legal hold (fail-closed) + SIEM (CEF) export
+packages/enrolment/     @origentra/enrolment — biometric consent gate
+    consent.ts          granular signed, withdrawable consent
+    registry.ts         consent-gated CMK-encrypted references; withdrawal → crypto-shred
 apps/cli/               reference CLI + end-to-end demo
 apps/witness/           Origentra Witness — node:http witness service
 apps/verifier/          Origentra Verify — node:http public verifier + inline UI
 apps/scim/              Origentra SCIM — node:http provisioning endpoint
 apps/publisher/         governed-publish runner + go-live entrypoint (live.ts)
-bench/                  SocialTrust-Bench v0.1 — 22-KPI reproducible harness
+bench/                  SocialTrust-Bench v0.1 — 23-KPI reproducible harness
 docs/                   CLAIMS · LIMITATIONS · THREAT-MODEL · SOCIALTRUST-BENCH · ADRs
 ```
 
@@ -175,7 +178,7 @@ these are later milestones and are **not** present or claimed:
 | **2. Public verifier + persistence** | node:http verifier, durable tenant-isolated store | ✅ done |
 | **3. Perceptual media** | zero-dep PNG codec + dHash (image survivability) | ✅ done |
 | **4. Real adapter** | non-simulated local publishing adapter behind the shared contract | ✅ done |
-| **5. SocialTrust-Bench v0.1** | 22-KPI reproducible benchmark, each mapped to a failure mode | ✅ done |
+| **5. SocialTrust-Bench v0.1** | 23-KPI reproducible benchmark, each mapped to a failure mode | ✅ done |
 | **6. Network adapter transport** | OAuth2 + retry/backoff/timeout/idempotency HTTP adapter + LinkedIn mapping, tested vs. a mock platform | ✅ done |
 | **7. Transparency log + revocation** | RFC 6962 Merkle log, signed checkpoints, inclusion/consistency proofs, trust-gated revocation consulted by the verifier | ✅ done |
 | **8. Witnessing + durable log** | witness cosigning (refuses non-append-only heads), fork/split-view detection, file-backed durable log | ✅ done |
@@ -185,6 +188,7 @@ these are later milestones and are **not** present or claimed:
 | **11. Audio/video detectors** | FFT acoustic hash + frame-hash video fingerprint + AV reuse detection (on PCM / extracted frames) | ✅ done |
 | **12. Enterprise controls** | customer-managed keys (envelope encryption + rotation), OIDC/JWT SSO, SCIM provisioning, legal hold + SIEM export | ✅ done |
 | **6b. Go-live readiness** | governed-publish runner through the real adapter, hermetic mock tests, env-credentialed LinkedIn publisher + gated live test + runbook (`docs/GO-LIVE.md`) | ✅ ready — awaiting credentials |
+| **13. Biometric consent gate** | granular signed consent, consent-gated CMK-encrypted references, withdrawal → crypto-shred (Article 9 privacy-by-design; legal sign-off still required) | ✅ done |
 | 8c. Witness federation + on-chain anchor | deployed multi-operator witnesses, discovery/registry, external anchoring | planned |
 | 12b. SAML + hardened storage | XML SAML SSO, external KMS/HSM, PostgreSQL row-level security, real codec decode | planned |
 

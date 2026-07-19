@@ -58,6 +58,9 @@ may assert about Milestone 1. It is updated as capabilities land.
 | A target under legal hold cannot be deleted (fail closed); audit events export to a SIEM (CEF). | `src/governance.ts`, `test/governance.test.ts` |
 | The governed-publish runner drives the full flow through the real network adapter; verified end-to-end against a mock platform. | `apps/publisher`, `apps/publisher/test/publish.test.ts` |
 | The go-live path is ready: an env-credentialed LinkedIn publisher + a credentials-gated live test (skipped in CI). | `apps/publisher/live.ts`, `apps/publisher/test/live.test.ts`, `docs/GO-LIVE.md` |
+| Biometric enrolment requires granular signed consent; a detection reference is obtainable only while that consent is active. | `@origentra/enrolment`, `test/registry.test.ts` |
+| Withdrawal is signed by the consenting key and crypto-shreds the encrypted reference (no plaintext copy remains). | `src/registry.ts`, `test/registry.test.ts`; bench "Consent gating & crypto-shred" |
+| A detector index built from active enrolments drops a withdrawn subject (enrolment-gating in code). | `test/registry.test.ts` (ImpersonationIndex integration) |
 
 ## Prohibited claims (NOT supported by this codebase)
 
@@ -100,6 +103,13 @@ may assert about Milestone 1. It is updated as capabilities land.
   probabilistic correlation, not a conclusive identity determination.
 - ❌ "A single report (or one reporter) is a corroborated signal." — corroboration
   requires a quorum of *distinct* trusted reporters.
+- ❌ "The enrolment consent gate makes biometric detection lawful." — it
+  implements consent, minimisation and reversible crypto-shred for *consenting*
+  subjects (the privacy-by-design gate), but it does **not** by itself establish
+  an Article 9 lawful basis, and the basis for comparing against a *non-consenting*
+  suspected impersonator (substantial public interest + Appropriate Policy
+  Document) remains a legal/DPO decision. The non-biometric detectors need none of
+  this and can ship now.
 - ❌ "A detector proves theft / impersonation / that an account is malicious." —
   a detector emits *evidence* with confidence and benign alternatives; a match is
   evidence of reuse/similarity, not proof of intent. Near-matches carry false
