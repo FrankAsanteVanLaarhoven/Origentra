@@ -42,8 +42,8 @@ Run it:
 
 ```bash
 node apps/cli/origentra.ts demo      # the whole loop, end-to-end
-npm test                             # 151 tests across all packages
-npm run bench                        # SocialTrust-Bench v0.1 (20 KPIs)
+npm test                             # 169 tests across all packages
+npm run bench                        # SocialTrust-Bench v0.1 (22 KPIs)
 npm run serve                        # Origentra Verify on http://localhost:8787
 ```
 
@@ -108,10 +108,16 @@ packages/detectors/     @origentra/detectors — abuse detectors that feed Senti
     av.ts               audio/video reuse detection (acoustic hash + frame-hash)
     impersonation.ts    homoglyph/typosquat handles + perceptual likeness
     report.ts           bridge: positive detection → signed Sentinel signal
+packages/enterprise/    @origentra/enterprise — enterprise controls
+    cmk.ts              customer-managed keys — AES-256-GCM envelope encryption
+    sso.ts              OIDC/JWT ID-token verification → scoped identity
+    scim.ts             SCIM 2.0 provisioning (issue/revoke identities)
+    governance.ts       legal hold (fail-closed) + SIEM (CEF) export
 apps/cli/               reference CLI + end-to-end demo
 apps/witness/           Origentra Witness — node:http witness service
 apps/verifier/          Origentra Verify — node:http public verifier + inline UI
-bench/                  SocialTrust-Bench v0.1 — 20-KPI reproducible harness
+apps/scim/              Origentra SCIM — node:http provisioning endpoint
+bench/                  SocialTrust-Bench v0.1 — 22-KPI reproducible harness
 docs/                   CLAIMS · LIMITATIONS · THREAT-MODEL · SOCIALTRUST-BENCH · ADRs
 ```
 
@@ -151,9 +157,12 @@ these are later milestones and are **not** present or claimed:
   AcoustID compatibility. Audio (acoustic hash) and video (frame-hash) perceptual
   fingerprints and their reuse detectors are built and tested — on PCM / extracted
   frames; see [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
-- Enterprise controls (SAML/SCIM/CMK/data-residency), a hardened database with
-  row-level security (the reference store is file-backed but enforces the same
-  isolation contract), and independent third-party benchmark replication.
+- **XML SAML SSO, external KMS/HSM, and PostgreSQL row-level security.** SSO
+  (OIDC/JWT), SCIM provisioning, customer-managed envelope encryption, legal hold
+  and SIEM export are built and tested; SAML XML-DSig, AWS/GCP-KMS integration and
+  a hardened RLS database are not (the reference stores are file-backed but enforce
+  the same isolation contract).
+- Independent third-party benchmark replication.
 
 ---
 
@@ -165,7 +174,7 @@ these are later milestones and are **not** present or claimed:
 | **2. Public verifier + persistence** | node:http verifier, durable tenant-isolated store | ✅ done |
 | **3. Perceptual media** | zero-dep PNG codec + dHash (image survivability) | ✅ done |
 | **4. Real adapter** | non-simulated local publishing adapter behind the shared contract | ✅ done |
-| **5. SocialTrust-Bench v0.1** | 20-KPI reproducible benchmark, each mapped to a failure mode | ✅ done |
+| **5. SocialTrust-Bench v0.1** | 22-KPI reproducible benchmark, each mapped to a failure mode | ✅ done |
 | **6. Network adapter transport** | OAuth2 + retry/backoff/timeout/idempotency HTTP adapter + LinkedIn mapping, tested vs. a mock platform | ✅ done |
 | **7. Transparency log + revocation** | RFC 6962 Merkle log, signed checkpoints, inclusion/consistency proofs, trust-gated revocation consulted by the verifier | ✅ done |
 | **8. Witnessing + durable log** | witness cosigning (refuses non-append-only heads), fork/split-view detection, file-backed durable log | ✅ done |
@@ -173,9 +182,10 @@ these are later milestones and are **not** present or claimed:
 | **9. Abuse-signal exchange** | recommend-only, quorum-gated, appealable, transparency-logged evidence sharing + sock-puppet linkage — never a verdict | ✅ done |
 | **10. Abuse detectors** | reused/stolen-content (digest + CDC + perceptual) + impersonation (homoglyph/typosquat + likeness), bridging to signed Sentinel signals | ✅ done |
 | **11. Audio/video detectors** | FFT acoustic hash + frame-hash video fingerprint + AV reuse detection (on PCM / extracted frames) | ✅ done |
+| **12. Enterprise controls** | customer-managed keys (envelope encryption + rotation), OIDC/JWT SSO, SCIM provisioning, legal hold + SIEM export | ✅ done |
 | 6b. Live platform integration | run the LinkedIn/YouTube adapter against the real API with operator credentials | planned |
-| 8c. Witness federation + on-chain anchor | deployed multi-operator witnesses, discovery/registry, external anchoring, Postgres RLS | planned |
-| 12. Enterprise controls | SAML/SCIM/CMK/data-residency, Postgres RLS, real container/codec decode | planned |
+| 8c. Witness federation + on-chain anchor | deployed multi-operator witnesses, discovery/registry, external anchoring | planned |
+| 12b. SAML + hardened storage | XML SAML SSO, external KMS/HSM, PostgreSQL row-level security, real codec decode | planned |
 
 ## License
 

@@ -149,6 +149,22 @@ This is the highest-risk capability; its limitations are safety-critical.
   minimising PII in evidence is the caller's responsibility. No automated
   distribution/subscription protocol ships yet.
 
+## Enterprise controls
+
+- **CMK:** `LocalKeyProvider` holds the root key in-process — it is the reference
+  customer-KMS boundary, not an external KMS/HSM (that is a matching `KeyProvider`
+  implementation, not built). Envelope encryption and rotation are real.
+- **SSO is OIDC/JWT** (EdDSA + RS256), not XML SAML. SAML XML-DSig is not
+  implemented.
+- **SCIM** is an RFC 7644 *subset* over an in-memory store (create/read/list/
+  patch-active/patch-roles/delete); filtering, bulk and full PATCH paths are not.
+- **Legal hold + SIEM export are libraries.** The hold registry fails closed when
+  `assertNotHeld` is called, but wiring that guard into *every* deletion/revocation
+  path, and every event source into the SIEM export, is integration work not yet
+  done platform-wide.
+- **PostgreSQL with row-level security** is deferred — the durable stores are
+  file-backed and enforce the same tenant-isolation contract in the meantime.
+
 ## Not present at all (see README "Deliberately not built yet")
 
 Cross-platform reuse / impersonation monitoring at scale, deepfake / synthetic-

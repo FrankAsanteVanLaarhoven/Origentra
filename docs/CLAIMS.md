@@ -52,6 +52,10 @@ may assert about Milestone 1. It is updated as capabilities land.
 | An FFT-based acoustic hash matches audio robustly to volume/perturbation; unrelated audio is distinguishable. | `@origentra/media` `fft.ts`/`audio.ts`, `test/audio.test.ts` |
 | Video frame-hash sequences match re-encoded/resized/sub-clips by containment; unrelated clips do not. | `src/video.ts`, `test/video.test.ts` |
 | Audio/video reuse detectors flag copies by another account (evidence, not verdict); own content is never flagged. | `@origentra/detectors` `av.ts`, `test/av.test.ts`; bench "AV reuse detection" |
+| Customer-managed envelope encryption round-trips; wrong key and tampering fail closed; root rotation re-wraps without re-encrypting. | `@origentra/enterprise` `cmk.ts`, `test/cmk.test.ts`; bench "CMK envelope integrity" |
+| OIDC/JWT SSO tokens verify against a JWKS (iss/aud/exp/kid); forged/expired/wrong-audience tokens are rejected. | `src/sso.ts`, `test/sso.test.ts`; bench "SSO token validation" |
+| SCIM provisioning issues a scoped identity on create and revokes it on deactivate/delete (bearer-authed HTTP). | `src/scim.ts`, `apps/scim`, `apps/scim/test` |
+| A target under legal hold cannot be deleted (fail closed); audit events export to a SIEM (CEF). | `src/governance.ts`, `test/governance.test.ts` |
 
 ## Prohibited claims (NOT supported by this codebase)
 
@@ -105,6 +109,12 @@ may assert about Milestone 1. It is updated as capabilities land.
   defeats the video hash.
 - ❌ "Origentra monitors all platforms for reuse at scale." — the detectors and
   exchange are built; large-scale continuous cross-platform monitoring is not.
+- ❌ "Origentra supports SAML SSO." — SSO is **OIDC/JWT** only; XML-based SAML
+  (XML-DSig) is not implemented.
+- ❌ "Origentra integrates with AWS/GCP KMS or an HSM, or enforces Postgres RLS."
+  — `LocalKeyProvider` is the reference customer-KMS boundary; an external KMS is a
+  matching `KeyProvider` not built, and the durable stores are file-backed (same
+  isolation contract) rather than a hardened database with row-level security.
 - ❌ Any certification/compliance claim (SOC 2, ISO, GDPR-certified, etc.) — none
   has been independently obtained.
 

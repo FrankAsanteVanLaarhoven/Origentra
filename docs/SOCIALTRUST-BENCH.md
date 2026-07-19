@@ -43,6 +43,8 @@ this harness", nothing more.
 | Reuse-detection recall | stolen/reused content undetected | ≥95% | soft |
 | Detector false-positive rate | unrelated content wrongly flagged | ≤1% | hard |
 | AV reuse detection | audio/video copy undetected or unrelated flagged | 100% | hard |
+| CMK envelope integrity | customer-managed encryption fails or leaks | 100% | hard |
+| SSO token validation | invalid/forged SSO token accepted | 100% | hard |
 
 ## What the registered/stress split means
 

@@ -1,0 +1,13 @@
+{
+  "name": "@origentra/enterprise",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Enterprise controls: customer-managed keys (envelope encryption + rotation), OIDC/JWT SSO verification, SCIM provisioning, legal hold and SIEM export.",
+  "license": "MIT",
+  "author": "Frank Asante Van Laarhoven <frankleroyvan@gmail.com>",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

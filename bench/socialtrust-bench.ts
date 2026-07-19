@@ -53,6 +53,7 @@ import {
   type AbuseTarget,
 } from '../packages/sentinel/src/index.ts';
 import { ReuseIndex, ImpersonationIndex, AudioReuseIndex, VideoReuseIndex } from '../packages/detectors/src/index.ts';
+import { LocalKeyProvider, encrypt, decrypt, rewrap, Jwks, verifyIdToken, signIdToken } from '../packages/enterprise/src/index.ts';
 import {
   imageFingerprintRaw,
   perceptualSimilarity,
@@ -633,6 +634,61 @@ function kpiAvDetectors() {
   record({ kpi: 'AV reuse detection', failureMode: 'audio/video copy undetected or unrelated wrongly flagged', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} audio + video match/non-match checks` });
 }
 
+// ---- KPI 21: CMK envelope integrity ----------------------------------------
+
+function kpiCmk() {
+  let checks = 0;
+  let correct = 0;
+  for (let i = 0; i < 40; i++) {
+    const kms = LocalKeyProvider.generate();
+    const env = encrypt(`payload ${i}`, kms);
+    checks++;
+    if (decrypt(env, kms).toString('utf8') === `payload ${i}`) correct++;
+    checks++;
+    try {
+      decrypt(env, LocalKeyProvider.generate());
+    } catch {
+      correct++; // wrong customer key must fail
+    }
+    const flipped = Buffer.from(env.ciphertext, 'base64');
+    flipped[0] = flipped[0]! ^ 0xff;
+    checks++;
+    try {
+      decrypt({ ...env, ciphertext: flipped.toString('base64') }, kms);
+    } catch {
+      correct++; // tamper must fail
+    }
+    const nk = LocalKeyProvider.generate();
+    const rot = rewrap(env, kms, nk);
+    checks++;
+    if (decrypt(rot, nk).toString('utf8') === `payload ${i}` && rot.ciphertext === env.ciphertext) correct++;
+  }
+  record({ kpi: 'CMK envelope integrity', failureMode: 'customer-managed encryption fails or leaks', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} round-trip + wrong-key + tamper + rotation` });
+}
+
+// ---- KPI 22: SSO token validation ------------------------------------------
+
+function kpiSso() {
+  const idpKey = generateKeyPair();
+  const jwks = new Jwks().add({ kid: 'k1', alg: 'EdDSA', publicKeyPem: idpKey.publicKeyPem });
+  const nowS = 1_760_000_000;
+  const opts = { jwks, issuer: 'https://idp', audience: 'origentra', now: nowS };
+  const base = (o: Record<string, unknown> = {}) => ({ iss: 'https://idp', sub: 'u', aud: 'origentra', exp: nowS + 3600, iat: nowS, ...o });
+  let checks = 0;
+  let correct = 0;
+  for (let i = 0; i < 20; i++) {
+    checks++;
+    if (verifyIdToken(signIdToken(base(), 'k1', idpKey.privateKeyPem), opts).valid) correct++;
+    checks++;
+    if (!verifyIdToken(signIdToken(base({ exp: nowS - 100 }), 'k1', idpKey.privateKeyPem), opts).valid) correct++;
+    checks++;
+    if (!verifyIdToken(signIdToken(base({ aud: 'other' }), 'k1', idpKey.privateKeyPem), opts).valid) correct++;
+    checks++;
+    if (!verifyIdToken(signIdToken(base(), 'k1', generateKeyPair().privateKeyPem), opts).valid) correct++;
+  }
+  record({ kpi: 'SSO token validation', failureMode: 'invalid/forged SSO token accepted', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} valid-accept + expired/aud/forged-reject` });
+}
+
 // ---- run + report -----------------------------------------------------------
 
 function run() {
@@ -654,6 +710,8 @@ function run() {
   kpiRecommendOnly();
   kpiDetectors();
   kpiAvDetectors();
+  kpiCmk();
+  kpiSso();
   const durationMs = Number(process.hrtime.bigint() - started) / 1e6;
 
   // Table
