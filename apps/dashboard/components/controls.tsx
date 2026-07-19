@@ -44,7 +44,7 @@ export function LangSwitcher() {
               onClick={() => { setLang(l.code); setOpen(false); play("nav"); }}
             >
               <span style={{ color: l.code === lang ? "var(--neon)" : "inherit" }}>{l.native}</span>
-              <span className="mono text-[11px]" style={{ color: "var(--muted)" }}>{l.full ? l.code : `${l.code} ·`}</span>
+              <span className="mono text-[11px]" style={{ color: l.draft ? "var(--warn)" : "var(--muted)" }}>{l.draft ? "draft" : l.code}</span>
             </button>
           ))}
         </div>

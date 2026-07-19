@@ -6,7 +6,7 @@ import { MiniClock } from "./WorldClock";
 import { PiPButton } from "./PiPButton";
 
 export function Topbar({ onMenu }: { onMenu?: () => void }) {
-  const { t } = useI18n();
+  const { t, isDraft } = useI18n();
   return (
     <header
       className="sticky top-0 z-30 flex items-center gap-2 border-b px-3 py-3 backdrop-blur sm:gap-3 sm:px-5"
@@ -20,6 +20,11 @@ export function Topbar({ onMenu }: { onMenu?: () => void }) {
           <span className="kbd">⌘K</span>
         </div>
       </div>
+      {isDraft && (
+        <span className="mono hidden rounded px-2 py-1 text-[10px] sm:inline" style={{ border: "1px solid var(--warn)", color: "var(--warn)" }} title="Draft translation — pending professional review">
+          DRAFT ⚠
+        </span>
+      )}
       <MiniClock />
       <div className="flex items-center gap-2">
         <PiPButton />

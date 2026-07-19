@@ -8,6 +8,7 @@ const KEY = "origentra-lang";
 interface I18nCtx {
   lang: Lang;
   dir: "ltr" | "rtl";
+  isDraft: boolean;
   setLang: (l: Lang) => void;
   t: (k: string) => string;
 }
@@ -40,8 +41,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     [lang],
   );
 
-  const dir = LANGUAGES.find((l) => l.code === lang)?.rtl ? "rtl" : "ltr";
-  return <Ctx.Provider value={{ lang, dir, setLang, t }}>{children}</Ctx.Provider>;
+  const meta = LANGUAGES.find((l) => l.code === lang);
+  const dir = meta?.rtl ? "rtl" : "ltr";
+  const isDraft = !!meta?.draft;
+  return <Ctx.Provider value={{ lang, dir, isDraft, setLang, t }}>{children}</Ctx.Provider>;
 }
 
 export const useI18n = () => useContext(Ctx);
