@@ -38,6 +38,8 @@ this harness", nothing more.
 | Decision determinism | non-deterministic authorisation | 100% | hard |
 | Transparency-log consistency | log rewrites history undetectably | 100% | hard |
 | Witness fork detection | forked / split-view log accepted | 100% | hard |
+| Abuse-signal integrity | false/weaponised flag treated as corroborated | 100% | hard |
+| Recommend-only invariant | exchange emits an enforcement verdict | 100% | hard |
 
 ## What the registered/stress split means
 

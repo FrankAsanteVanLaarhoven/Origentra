@@ -40,6 +40,11 @@ may assert about Milestone 1. It is updated as capabilities land.
 | Witnesses cosign over HTTP; a log operator distributes a checkpoint to a witness quorum. | `apps/witness`, `src/http-transport.ts`, `src/gossip.ts`, `apps/witness/test` |
 | An auditor querying witnesses detects a split view (a log that showed different heads). | `auditSplitView`, `test/gossip.test.ts`, `apps/witness/test` |
 | A checkpoint root can be anchored to a local append-only anchor and verified under trust. | `src/anchor.ts`, `test/anchor.test.ts` |
+| Abuse reports are signed; only trusted reporters are admitted; corroboration needs a quorum of *distinct* trusted reporters. | `@origentra/sentinel`, `test/exchange.test.ts` |
+| A target can appeal (open); a pending appeal marks a signal contested; an overturned report leaves the active signal. | `src/exchange.ts`, `test/exchange.test.ts` |
+| Reports, appeals and adjudications are transparency-logged (append-only). | `src/exchange.ts` (log), `test/exchange.test.ts` |
+| The exchange is recommend-only: its output carries evidence + a disclaimer and never an enforcement verdict field. | `test/exchange.test.ts`, SocialTrust-Bench "Recommend-only invariant" |
+| Sock-puppet linkage yields confidence-scored clusters (evidence of correlation, not a hard identity claim). | `src/linkage.ts`, `test/linkage.test.ts` |
 
 ## Prohibited claims (NOT supported by this codebase)
 
@@ -72,6 +77,18 @@ may assert about Milestone 1. It is updated as capabilities land.
 - ❌ "Origentra anchors checkpoints to an external blockchain / third-party
   timestamp." — only a **local** file anchor exists; an external/on-chain anchor
   is a matching implementation of the `Anchor` interface that is not built.
+- ❌ "Origentra bans, blocks or enforces against accounts, or does so across
+  platforms." — the abuse-signal exchange is **recommend-only**; it shares
+  evidence and a consuming platform decides and is accountable. There is no
+  enforcement field in the system.
+- ❌ "Origentra proves an account is malicious, or that two accounts are the same
+  person." — it shares evidence, corroboration and confidence; linkage is
+  probabilistic correlation, not a conclusive identity determination.
+- ❌ "A single report (or one reporter) is a corroborated signal." — corroboration
+  requires a quorum of *distinct* trusted reporters.
+- ❌ "Origentra detects abuse / fake accounts." — it ships **no detectors**;
+  reports come from external detection or human review. It provides accountability,
+  quorum and appeal around those reports, and detection is never certain.
 - ❌ Any certification/compliance claim (SOC 2, ISO, GDPR-certified, etc.) — none
   has been independently obtained.
 

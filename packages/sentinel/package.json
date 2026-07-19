@@ -1,0 +1,13 @@
+{
+  "name": "@origentra/sentinel",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Recommend-only abuse-signal exchange: signed evidence-backed reports, sock-puppet linkage, quorum gating, transparency-logged, appealable. Never an enforcement verdict.",
+  "license": "MIT",
+  "author": "Frank Asante Van Laarhoven <frankleroyvan@gmail.com>",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

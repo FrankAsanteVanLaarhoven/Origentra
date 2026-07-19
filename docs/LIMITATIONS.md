@@ -111,6 +111,31 @@ it is a boundary of what Milestone 1 claims.
   sources directly via type stripping; runtime behaviour is validated by the
   test suite, which is the primary correctness gate.
 
+## Abuse-signal exchange (Sentinel)
+
+This is the highest-risk capability; its limitations are safety-critical.
+
+- **Recommend-only, by construction.** The exchange never bans, blocks or enforces
+  and does not push enforcement to other platforms. A consuming platform receives
+  evidence and is accountable for its own decision. This is a mitigation for GDPR
+  Article 22 (no solely-automated decisions with significant effect) and for
+  defamation exposure — do not remove it.
+- **No detectors ship here.** Origentra provides accountability (signed reports),
+  quorum, appeal and transparency-logging *around* abuse reports; the reports
+  themselves come from external detection or human review. Detection is an arms
+  race with real false positives; the safe default is insufficient evidence.
+- **Quorum ≠ truth.** Corroboration means a quorum of distinct *trusted* reporters
+  agreed — a colluding quorum of trusted reporters is bounded only by the quorum,
+  not by reputation. Reporter-reputation weighting is not implemented.
+- **Linkage is heuristic.** Sock-puppet clusters follow confidence-scored edges;
+  false links are expected. Low-confidence edges are excluded from clustering and
+  are for human review only. It never proves two accounts are the same person.
+- **Appeal/adjudication are the due-process backbone**, but adjudication quality is
+  a human/operational responsibility, not something the code guarantees.
+- **Privacy.** The exchange shares signals and evidence references, not dossiers;
+  minimising PII in evidence is the caller's responsibility. No automated
+  distribution/subscription protocol ships yet.
+
 ## Not present at all (see README "Deliberately not built yet")
 
 Cross-platform reuse / impersonation monitoring at scale, deepfake / synthetic-

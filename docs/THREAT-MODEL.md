@@ -44,6 +44,14 @@ integrations are out of scope here and carry their own threat models when built.
   trust store. (Revocation *distribution* is addressed by
   `@origentra/transparency`: a trusted, log-recorded revocation makes a verifier
   emit `CREDENTIAL_REVOKED`.)
+- **Weaponised flagging (abuse exchange).** The flagging system itself is an abuse
+  vector. Mitigations: reports are signed (attributable), only trusted reporters
+  are admitted, corroboration needs a quorum of *distinct* reporters, targets can
+  appeal, adjudicators can overturn, everything is transparency-logged, and the
+  system is recommend-only (no enforcement). Residual: a colluding quorum of
+  trusted reporters is bounded only by the quorum (no reporter-reputation
+  weighting), and false positives / false linkage are possible — hence
+  recommend-only + appeal + human adjudication are load-bearing.
 - **Log fork / split view.** Now detectable in transit: witnesses refuse
   non-append-only heads, a log operator distributes checkpoints to a witness
   quorum, and `auditSplitView` catches a log that showed different witnesses

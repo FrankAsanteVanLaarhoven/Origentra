@@ -47,6 +47,12 @@ import {
   verifyConsistencyResult,
 } from '../packages/transparency/src/index.ts';
 import {
+  AbuseSignalExchange,
+  signReport,
+  signAdjudication,
+  type AbuseTarget,
+} from '../packages/sentinel/src/index.ts';
+import {
   imageFingerprintRaw,
   perceptualSimilarity,
   dHash,
@@ -467,6 +473,71 @@ function kpiWitness() {
   record({ kpi: 'Witness fork detection', failureMode: 'forked / split-view log accepted', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} cosign + refusal + split-view checks` });
 }
 
+// ---- KPI 16: abuse-signal integrity (quorum + accountability + overturn) ----
+
+function kpiAbuseSignals() {
+  let checks = 0;
+  let correct = 0;
+  for (let round = 0; round < 20; round++) {
+    const reporterTrust = new TrustStore();
+    const adjTrust = new TrustStore();
+    const adjKey = generateKeyPair();
+    adjTrust.add(adjKey.keyId, adjKey.publicKeyPem);
+    const ex = new AbuseSignalExchange(reporterTrust, adjTrust, { quorum: 2 });
+    const target: AbuseTarget = { type: 'account', id: `t${round}` };
+    const mkRep = () => {
+      const k = generateKeyPair();
+      reporterTrust.add(k.keyId, k.publicKeyPem);
+      return k;
+    };
+    const mkReport = (k: ReturnType<typeof generateKeyPair>, id: string, rid: string) =>
+      signReport({ reportId: rid, target, category: 'scam_fraud', evidence: [{ kind: 'x', ref: 'sha256:' + rid }], method: 'm', confidence: 0.7, uncertainty: 'may be a compromised legitimate account', reporterIdentityId: id, reportedAt: T0 }, k);
+
+    // Untrusted reporter must be rejected (accountability).
+    checks++;
+    if (!ex.submit(mkReport(generateKeyPair(), 'rogue', `x${round}`)).accepted) correct++;
+    // One trusted report is below quorum -> single_source, never corroborated.
+    const a = mkRep();
+    ex.submit(mkReport(a, `A${round}`, `r1-${round}`));
+    checks++;
+    if (ex.signals(target).categories[0]!.disposition === 'single_source') correct++;
+    // Two distinct trusted reporters -> corroborated.
+    const b = mkRep();
+    ex.submit(mkReport(b, `B${round}`, `r2-${round}`));
+    checks++;
+    if (ex.signals(target).categories[0]!.disposition === 'corroborated') correct++;
+    // Overturning one report drops it below quorum again (appeal integrity).
+    ex.adjudicate(signAdjudication({ reportId: `r1-${round}`, decision: 'overturned', rationale: 'mistaken', adjudicatorId: 'adj', decidedAt: T0 }, adjKey));
+    const d = ex.signals(target).categories[0]!;
+    checks++;
+    if (d.disposition !== 'corroborated' && d.activeReports === 1) correct++;
+  }
+  record({ kpi: 'Abuse-signal integrity', failureMode: 'false/weaponised flag treated as corroborated', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} quorum + accountability + overturn checks` });
+}
+
+// ---- KPI 17: recommend-only invariant --------------------------------------
+
+function kpiRecommendOnly() {
+  const banned = ['verdict', 'ban', 'block', 'action', 'enforce', 'decision', 'sanction'];
+  let checks = 0;
+  let correct = 0;
+  for (let round = 0; round < 20; round++) {
+    const reporterTrust = new TrustStore();
+    const ex = new AbuseSignalExchange(reporterTrust, new TrustStore(), { quorum: 2 });
+    const target: AbuseTarget = { type: 'account', id: `t${round}` };
+    for (let j = 0; j < 2; j++) {
+      const k = generateKeyPair();
+      reporterTrust.add(k.keyId, k.publicKeyPem);
+      ex.submit(signReport({ reportId: `r${round}-${j}`, target, category: 'impersonation', evidence: [{ kind: 'x', ref: 'sha256:z' }], method: 'm', confidence: 0.6, uncertainty: 'possible look-alike, not confirmed', reporterIdentityId: `R${j}`, reportedAt: T0 }, k));
+    }
+    const summary = ex.signals(target);
+    const keys = [...Object.keys(summary), ...summary.categories.flatMap((c) => Object.keys(c))];
+    checks++;
+    if (!keys.some((k) => banned.includes(k)) && /not an enforcement decision/.test(summary.disclaimer)) correct++;
+  }
+  record({ kpi: 'Recommend-only invariant', failureMode: 'exchange emits an enforcement verdict', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} summaries carry evidence + disclaimer, no verdict field` });
+}
+
 // ---- run + report -----------------------------------------------------------
 
 function run() {
@@ -484,6 +555,8 @@ function run() {
   kpiDeterminism();
   kpiTransparency();
   kpiWitness();
+  kpiAbuseSignals();
+  kpiRecommendOnly();
   const durationMs = Number(process.hrtime.bigint() - started) / 1e6;
 
   // Table
