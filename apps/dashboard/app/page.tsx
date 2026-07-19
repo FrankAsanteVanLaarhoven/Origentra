@@ -14,10 +14,19 @@ interface Stats { validity: string; throughput: string; latency: string; blocked
 export default function Home() {
   const { t } = useI18n();
   const [stats, setStats] = useState<Stats | null>(null);
+  const [hist, setHist] = useState<number[]>([]);
 
   useEffect(() => {
     let alive = true;
-    const load = () => fetch("/api/stats").then((r) => r.json()).then((s) => alive && setStats(s)).catch(() => {});
+    const load = () =>
+      fetch("/api/stats")
+        .then((r) => r.json())
+        .then((s: Stats) => {
+          if (!alive) return;
+          setStats(s);
+          setHist((h) => [...h.slice(-23), Number(s.throughput) || 0]);
+        })
+        .catch(() => {});
     load();
     const id = setInterval(load, 3000);
     return () => { alive = false; clearInterval(id); };
@@ -38,7 +47,7 @@ export default function Home() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile label={t("kpi.validity")} value={stats?.validity ?? "99.9"} unit="%" delta="+0.0" tone="ok" />
-        <StatTile label={t("kpi.throughput")} value={stats?.throughput ?? "—"} unit="ev/s" delta={t("label.live")} tone="neon" />
+        <StatTile label={t("kpi.throughput")} value={stats?.throughput ?? "—"} unit="ev/s" tone="neon" spark={hist} />
         <StatTile label={t("kpi.latency")} value={stats?.latency ?? "—"} unit="ms" tone="neon" />
         <StatTile label={t("kpi.blocked")} value={stats?.blocked ?? "0"} tone="warn" />
       </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
+import { AreaChart } from "./charts";
 
 interface Evt { ts: number; actor: string; action: string; subject: string; hash?: string | null; ref?: boolean }
 
@@ -25,19 +26,22 @@ export function LiveAnalytics() {
     return () => es.close();
   }, []);
 
-  const max = Math.max(1, ...series);
+  const cur = series[series.length - 1] ?? 0;
+  const avg = Math.round(series.reduce((a, b) => a + b, 0) / series.length);
+  const peak = Math.max(...series);
   return (
     <div className="grid gap-4">
       <div className="panel p-4">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-between">
           <span className="text-sm" style={{ color: "var(--muted)" }}>{t("section.traffic")} · events/tick</span>
           <span className="dot pulse" style={{ color: "var(--neon)" }} />
         </div>
-        <div className="scanline flex h-28 items-end gap-[3px]">
-          {series.map((v, i) => (
-            <div key={i} style={{ height: `${(v / max) * 100}%`, width: "100%", background: "linear-gradient(180deg, var(--neon), transparent)", boxShadow: "0 0 8px rgba(var(--neon-rgb),0.4)", borderRadius: 2, transition: "height .3s ease" }} />
-          ))}
+        <div className="mono mb-1 flex gap-5 text-[11px]" style={{ color: "var(--muted)" }}>
+          <span>cur <span style={{ color: "var(--neon)" }}>{cur}</span></span>
+          <span>avg <span style={{ color: "var(--text)" }}>{avg}</span></span>
+          <span>peak <span style={{ color: "var(--text)" }}>{peak}</span></span>
         </div>
+        <AreaChart data={series} height={130} />
       </div>
 
       <div className="panel overflow-hidden p-0">

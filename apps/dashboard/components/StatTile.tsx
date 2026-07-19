@@ -1,3 +1,5 @@
+import { Sparkline } from "./charts";
+
 const TONE = { neon: "var(--neon)", ok: "var(--ok)", warn: "var(--warn)", bad: "var(--bad)" } as const;
 
 export function StatTile({
@@ -6,12 +8,14 @@ export function StatTile({
   unit,
   delta,
   tone = "neon",
+  spark,
 }: {
   label: string;
   value: string;
   unit?: string;
   delta?: string;
   tone?: keyof typeof TONE;
+  spark?: number[];
 }) {
   const color = TONE[tone];
   return (
@@ -24,7 +28,11 @@ export function StatTile({
         <span className="stat-value text-3xl" style={{ color: "var(--text)" }}>{value}</span>
         {unit && <span className="mono text-sm" style={{ color: "var(--muted)" }}>{unit}</span>}
       </div>
-      {delta && <div className="mono mt-1 text-[11px]" style={{ color }}>{delta}</div>}
+      {spark && spark.length > 1 ? (
+        <div className="mt-2 -mb-1"><Sparkline data={spark} color={color} /></div>
+      ) : (
+        delta && <div className="mono mt-1 text-[11px]" style={{ color }}>{delta}</div>
+      )}
     </div>
   );
 }
