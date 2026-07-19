@@ -42,7 +42,7 @@ Run it:
 
 ```bash
 node apps/cli/origentra.ts demo      # the whole loop, end-to-end
-npm test                             # 169 tests across all packages
+npm test                             # 172 tests (+1 gated live) across all packages
 npm run bench                        # SocialTrust-Bench v0.1 (22 KPIs)
 npm run serve                        # Origentra Verify on http://localhost:8787
 ```
@@ -117,6 +117,7 @@ apps/cli/               reference CLI + end-to-end demo
 apps/witness/           Origentra Witness — node:http witness service
 apps/verifier/          Origentra Verify — node:http public verifier + inline UI
 apps/scim/              Origentra SCIM — node:http provisioning endpoint
+apps/publisher/         governed-publish runner + go-live entrypoint (live.ts)
 bench/                  SocialTrust-Bench v0.1 — 22-KPI reproducible harness
 docs/                   CLAIMS · LIMITATIONS · THREAT-MODEL · SOCIALTRUST-BENCH · ADRs
 ```
@@ -183,7 +184,7 @@ these are later milestones and are **not** present or claimed:
 | **10. Abuse detectors** | reused/stolen-content (digest + CDC + perceptual) + impersonation (homoglyph/typosquat + likeness), bridging to signed Sentinel signals | ✅ done |
 | **11. Audio/video detectors** | FFT acoustic hash + frame-hash video fingerprint + AV reuse detection (on PCM / extracted frames) | ✅ done |
 | **12. Enterprise controls** | customer-managed keys (envelope encryption + rotation), OIDC/JWT SSO, SCIM provisioning, legal hold + SIEM export | ✅ done |
-| 6b. Live platform integration | run the LinkedIn/YouTube adapter against the real API with operator credentials | planned |
+| **6b. Go-live readiness** | governed-publish runner through the real adapter, hermetic mock tests, env-credentialed LinkedIn publisher + gated live test + runbook (`docs/GO-LIVE.md`) | ✅ ready — awaiting credentials |
 | 8c. Witness federation + on-chain anchor | deployed multi-operator witnesses, discovery/registry, external anchoring | planned |
 | 12b. SAML + hardened storage | XML SAML SSO, external KMS/HSM, PostgreSQL row-level security, real codec decode | planned |
 

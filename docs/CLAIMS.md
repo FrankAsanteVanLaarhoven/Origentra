@@ -56,15 +56,18 @@ may assert about Milestone 1. It is updated as capabilities land.
 | OIDC/JWT SSO tokens verify against a JWKS (iss/aud/exp/kid); forged/expired/wrong-audience tokens are rejected. | `src/sso.ts`, `test/sso.test.ts`; bench "SSO token validation" |
 | SCIM provisioning issues a scoped identity on create and revokes it on deactivate/delete (bearer-authed HTTP). | `src/scim.ts`, `apps/scim`, `apps/scim/test` |
 | A target under legal hold cannot be deleted (fail closed); audit events export to a SIEM (CEF). | `src/governance.ts`, `test/governance.test.ts` |
+| The governed-publish runner drives the full flow through the real network adapter; verified end-to-end against a mock platform. | `apps/publisher`, `apps/publisher/test/publish.test.ts` |
+| The go-live path is ready: an env-credentialed LinkedIn publisher + a credentials-gated live test (skipped in CI). | `apps/publisher/live.ts`, `apps/publisher/test/live.test.ts`, `docs/GO-LIVE.md` |
 
 ## Prohibited claims (NOT supported by this codebase)
 
-- ❌ "Origentra publishes to the live LinkedIn / YouTube / Instagram / TikTok
-  APIs." — a real HTTP network adapter and a LinkedIn body mapping exist and are
-  verified against a **mock** platform, but nothing here has been run against a
-  live third-party API. Doing so requires the operator's own credentials and a
-  live endpoint. `LocalPublishAdapter` is real but local; `SimulatedAdapter` does
-  no I/O. (LinkedIn media shares are also not mapped — text only.)
+- ❌ "Origentra has published to the live LinkedIn / YouTube / Instagram / TikTok
+  APIs." — the real HTTP adapter, LinkedIn mapping and governed-publish runner are
+  complete and verified against a **mock** platform, and a **credentials-gated**
+  live path exists (`apps/publisher/live.ts`) — but nothing here has been run
+  against a live third-party API in this repo (the live test is skipped without
+  operator credentials). See `docs/GO-LIVE.md`. LinkedIn media shares and YouTube
+  are not mapped.
 - ❌ "SocialTrust-Bench proves Origentra is secure / audited." — it is
   **self-measured** on a self-defined corpus (reproducibility/regression tool,
   not third-party audit; see `docs/SOCIALTRUST-BENCH.md`).
