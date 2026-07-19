@@ -42,6 +42,7 @@ this harness", nothing more.
 | Recommend-only invariant | exchange emits an enforcement verdict | 100% | hard |
 | Reuse-detection recall | stolen/reused content undetected | ≥95% | soft |
 | Detector false-positive rate | unrelated content wrongly flagged | ≤1% | hard |
+| AV reuse detection | audio/video copy undetected or unrelated flagged | 100% | hard |
 
 ## What the registered/stress split means
 

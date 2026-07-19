@@ -52,7 +52,7 @@ import {
   signAdjudication,
   type AbuseTarget,
 } from '../packages/sentinel/src/index.ts';
-import { ReuseIndex, ImpersonationIndex } from '../packages/detectors/src/index.ts';
+import { ReuseIndex, ImpersonationIndex, AudioReuseIndex, VideoReuseIndex } from '../packages/detectors/src/index.ts';
 import {
   imageFingerprintRaw,
   perceptualSimilarity,
@@ -586,6 +586,53 @@ function kpiDetectors() {
   record({ kpi: 'Detector false-positive rate', failureMode: 'unrelated content wrongly flagged', value: fpRate * 100, unit: '%', target: '<=1%', pass: fpRate <= 0.01, hardGate: true, detail: `${falsePos}/${fpTotal} unrelated flagged` });
 }
 
+// ---- KPI 20: audio/video reuse detection -----------------------------------
+
+function kpiAvDetectors() {
+  let checks = 0;
+  let correct = 0;
+
+  // AUDIO: a volume-changed copy must match; unrelated audio must not.
+  const tone = (freqs: number[], gain = 0.8) => {
+    const sr = 8000;
+    const n = sr * 2;
+    const s = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      let v = 0;
+      for (const f of freqs) v += Math.sin((2 * Math.PI * f * i) / sr);
+      s[i] = (v / freqs.length) * gain;
+    }
+    return { sampleRate: sr, samples: s };
+  };
+  const aidx = new AudioReuseIndex();
+  for (let i = 0; i < 10; i++) aidx.add(`song${i}`, 'alice', tone([440 + i * 12, 554 + i * 12, 659 + i * 12]));
+  for (let i = 0; i < 10; i++) {
+    checks++;
+    if (aidx.detect({ subjectId: 'x', publisherIdentityId: 'bob', audio: tone([440 + i * 12, 554 + i * 12, 659 + i * 12], 0.3) }).disposition !== 'no_match') correct++;
+  }
+  for (let i = 0; i < 10; i++) {
+    checks++;
+    if (aidx.detect({ subjectId: 'x', publisherIdentityId: 'bob', audio: tone([210 + i * 30, 930 + i * 30, 1610 + i * 30]) }).disposition === 'no_match') correct++;
+  }
+
+  // VIDEO: a resized clip must match its own; a different pattern must not.
+  const frames = (n: number, size: number, phase0: number) =>
+    Array.from({ length: n }, (_, k) => makeImage(size, size, (x, y) => pattern(x + phase0 + k * 0.05, y)));
+  const otherFrames = () => Array.from({ length: 12 }, () => makeImage(64, 64, (x, y) => 128 + 100 * Math.cos(4 * Math.PI * y) * Math.sin(2 * Math.PI * x + 1)));
+  const vidx = new VideoReuseIndex();
+  for (let i = 0; i < 10; i++) vidx.add(`clip${i}`, 'alice', frames(12, 64, i * 0.9));
+  for (let i = 0; i < 10; i++) {
+    checks++;
+    if (vidx.detect({ subjectId: 'x', publisherIdentityId: 'bob', frames: frames(12, 40, i * 0.9) }).disposition !== 'no_match') correct++;
+  }
+  for (let i = 0; i < 10; i++) {
+    checks++;
+    if (vidx.detect({ subjectId: 'x', publisherIdentityId: 'bob', frames: otherFrames() }).disposition === 'no_match') correct++;
+  }
+
+  record({ kpi: 'AV reuse detection', failureMode: 'audio/video copy undetected or unrelated wrongly flagged', value: (correct / checks) * 100, unit: '%', target: '100%', pass: correct === checks, hardGate: true, detail: `${correct}/${checks} audio + video match/non-match checks` });
+}
+
 // ---- run + report -----------------------------------------------------------
 
 function run() {
@@ -606,6 +653,7 @@ function run() {
   kpiAbuseSignals();
   kpiRecommendOnly();
   kpiDetectors();
+  kpiAvDetectors();
   const durationMs = Number(process.hrtime.bigint() - started) / 1e6;
 
   // Table

@@ -8,5 +8,6 @@
 export * from './types.ts';
 export * from './util.ts';
 export * from './reuse.ts';
+export * from './av.ts';
 export * from './impersonation.ts';
 export * from './report.ts';

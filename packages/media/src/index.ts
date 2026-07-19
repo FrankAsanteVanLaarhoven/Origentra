@@ -8,6 +8,9 @@ import { dHash, type Fingerprint } from './perceptual.ts';
 
 export * from './png.ts';
 export * from './perceptual.ts';
+export * from './fft.ts';
+export * from './audio.ts';
+export * from './video.ts';
 
 /** Decode a PNG and return its perceptual fingerprint, ready for a passport. */
 export function imageFingerprint(png: Buffer): Fingerprint {

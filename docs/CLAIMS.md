@@ -49,6 +49,9 @@ may assert about Milestone 1. It is updated as capabilities land.
 | Impersonation detection catches homoglyph/typosquat handles and perceptual likeness; identical names alone are inconclusive. | `src/impersonation.ts`, `test/impersonation.test.ts` |
 | A positive detection bridges to a signed Sentinel signal; a detector alone is single_source, never corroborated. | `src/report.ts`, `test/bridge.test.ts` |
 | On the synthetic bench: reuse recall 100%, detector false-positive rate 0% on unrelated content. | SocialTrust-Bench "Reuse-detection recall" / "Detector false-positive rate" |
+| An FFT-based acoustic hash matches audio robustly to volume/perturbation; unrelated audio is distinguishable. | `@origentra/media` `fft.ts`/`audio.ts`, `test/audio.test.ts` |
+| Video frame-hash sequences match re-encoded/resized/sub-clips by containment; unrelated clips do not. | `src/video.ts`, `test/video.test.ts` |
+| Audio/video reuse detectors flag copies by another account (evidence, not verdict); own content is never flagged. | `@origentra/detectors` `av.ts`, `test/av.test.ts`; bench "AV reuse detection" |
 
 ## Prohibited claims (NOT supported by this codebase)
 
@@ -95,9 +98,13 @@ may assert about Milestone 1. It is updated as capabilities land.
   evidence of reuse/similarity, not proof of intent. Near-matches carry false
   positives, the safe default is `inconclusive`, and a detector alone never
   corroborates (Sentinel quorum + appeal still apply).
-- ❌ "Origentra detects abuse across all media." — the detectors cover text/CDC
-  and image (perceptual) reuse plus handle/likeness impersonation; audio, video,
-  and at-scale cross-platform monitoring are not built.
+- ❌ "Origentra decodes any audio/video format." — the AV detectors consume PCM
+  samples and extracted frames. A minimal 16-bit PCM WAV parser exists; MP3/AAC/
+  Opus decoding and MP4/H.264 demuxing are NOT implemented (decode/extract first),
+  Chromaprint/AcoustID compatibility is not claimed, and heavy crop/rotation
+  defeats the video hash.
+- ❌ "Origentra monitors all platforms for reuse at scale." — the detectors and
+  exchange are built; large-scale continuous cross-platform monitoring is not.
 - ❌ Any certification/compliance claim (SOC 2, ISO, GDPR-certified, etc.) — none
   has been independently obtained.
 

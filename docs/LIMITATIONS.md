@@ -126,9 +126,17 @@ This is the highest-risk capability; its limitations are safety-critical.
   explicit `inconclusive`/`no_match` state, benign alternatives and its own
   limitations. Caveats: the corpus is not exhaustive; CDC/perceptual/homoglyph
   matching all have false positives; the confusables map is a *curated subset* of
-  the Unicode confusables, not the full set; perceptual likeness is not identity;
-  and audio/video and at-scale monitoring are not implemented. A detection alone
-  is `single_source` in Sentinel — quorum + appeal remain the backstops.
+  the Unicode confusables, not the full set; and perceptual likeness is not
+  identity. A detection alone is `single_source` in Sentinel — quorum + appeal
+  remain the backstops.
+- **Audio/video detectors** exist: an FFT-based Haitsma-Kalker acoustic hash and a
+  dHash frame-hash-sequence video fingerprint. They consume **PCM samples** and
+  **extracted frames** respectively — a minimal 16-bit PCM WAV parser is provided,
+  but MP3/AAC/Opus decoding and MP4/H.264 demuxing are NOT implemented (decode/
+  extract first). The acoustic hash is HK-family, not Chromaprint/AcoustID-
+  compatible; the video hash tolerates re-encode/resize/subset/re-timing but not
+  heavy crop/rotation. Thresholds are tunable defaults. At-scale continuous
+  cross-platform monitoring is not built.
 - **Quorum ≠ truth.** Corroboration means a quorum of distinct *trusted* reporters
   agreed — a colluding quorum of trusted reporters is bounded only by the quorum,
   not by reputation. Reporter-reputation weighting is not implemented.
