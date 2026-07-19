@@ -1,36 +1,62 @@
+import { existsSync, statSync, openSync, readSync, closeSync } from "node:fs";
+import { ensureGenerator, EVENTS_FILE } from "@/lib/event-source";
+
 export const dynamic = "force-dynamic";
 
-const ACTORS = ["id-frank", "agent:publish-svc", "id-editor", "sentinel", "policy-engine", "witness:w1", "adapter:local-fs/1"];
-const ACTIONS = ["passport.sign", "publish.evaluate", "publish.approve", "publish.execute", "reuse.detect", "revocation.add", "checkpoint.cosign", "identity.issue", "consent.record"];
-const SUBJECTS = ["asset-42", "pub-1", "asset-7", "tenant-acme", "incident-9", "clip-3", "enr-1"];
-
+// Reference fallback, used only until the real generator's file appears.
+const A = ["id-frank", "agent:publish-svc", "id-editor", "sentinel", "policy-engine"];
+const AC = ["passport.sign", "publish.evaluate", "publish.approve", "publish.execute", "reuse.detect"];
+const SB = ["asset-42", "pub-1", "asset-7", "incident-9"];
 const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)]!;
+const synthetic = () => ({ ts: Date.now(), actor: pick(A), action: pick(AC), subject: pick(SB), hash: null as string | null, ref: true });
 
-/** Server-Sent Events: a live stream of Origentra-style control-plane events.
- *  (Reference stream; wire to real audit/transparency events in production.) */
+/** SSE stream of REAL Origentra control-plane audit entries (hash-chained, Ed25519-
+ *  signed) tailed from the generator's file; reference data until it goes live. */
 export async function GET(req: Request) {
+  ensureGenerator();
   const enc = new TextEncoder();
-  let id: ReturnType<typeof setInterval>;
+  let timer: ReturnType<typeof setInterval>;
 
   const stream = new ReadableStream({
     start(controller) {
-      const push = () => {
-        const e = { ts: Date.now(), actor: pick(ACTORS), action: pick(ACTIONS), subject: pick(SUBJECTS), risk: Math.floor(Math.random() * 7) };
-        try {
-          controller.enqueue(enc.encode(`data: ${JSON.stringify(e)}\n\n`));
-        } catch {
-          clearInterval(id);
-        }
+      const send = (o: unknown) => {
+        try { controller.enqueue(enc.encode(`data: ${JSON.stringify(o)}\n\n`)); } catch { stop(); }
       };
-      push();
-      id = setInterval(push, 900);
-      req.signal.addEventListener("abort", () => {
-        clearInterval(id);
+      let pos = existsSync(EVENTS_FILE) ? statSync(EVENTS_FILE).size : 0;
+      let sawReal = false;
+
+      const poll = () => {
+        try {
+          if (existsSync(EVENTS_FILE)) {
+            const size = statSync(EVENTS_FILE).size;
+            if (size < pos) pos = size; // file was trimmed/rotated — skip to new end
+            if (size > pos) {
+              const fd = openSync(EVENTS_FILE, "r");
+              const len = size - pos;
+              const buf = Buffer.alloc(len);
+              readSync(fd, buf, 0, len, pos);
+              closeSync(fd);
+              pos = size;
+              for (const line of buf.toString("utf8").split("\n")) {
+                if (!line.trim()) continue;
+                try { send(JSON.parse(line)); sawReal = true; } catch { /* partial line */ }
+              }
+            }
+          }
+          if (!sawReal) send(synthetic());
+        } catch { /* transient fs error */ }
+      };
+
+      poll();
+      timer = setInterval(poll, 700);
+      req.signal.addEventListener("abort", stop);
+      function stop() {
+        clearInterval(timer);
         try { controller.close(); } catch { /* already closed */ }
-      });
+      }
     },
     cancel() {
-      clearInterval(id);
+      clearInterval(timer);
     },
   });
 

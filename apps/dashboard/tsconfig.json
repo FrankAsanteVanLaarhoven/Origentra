@@ -30,5 +30,6 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "//": "scripts/ runs under native Node (type-stripping), not Next — it imports the zero-dep .ts core directly, so it is excluded from Next's type-check.",
+  "exclude": ["node_modules", "scripts"]
 }
