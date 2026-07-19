@@ -1,199 +1,154 @@
+<div align="center">
+
 # Origentra Passport OS
 
-**Secure every identity. Prove every asset. Control every release.**
+### The platform-neutral trusted control plane for digital content
 
-Origentra is the platform-neutral **trusted control plane for digital content**:
-it verifies *who* is acting, establishes *what* they own, controls *what* may be
-published, preserves *how* content was created, detects misuse, and supports
-accountable response.
+**Secure every identity · Prove every asset · Control every release**
+
+![License](https://img.shields.io/badge/license-MIT-2563eb)
+![Node](https://img.shields.io/badge/node-%E2%89%A5%2022-339933)
+![Runtime deps](https://img.shields.io/badge/core%20runtime%20deps-0-16a34a)
+![Tests](https://img.shields.io/badge/tests-184%20passing-16a34a)
+![SocialTrust-Bench](https://img.shields.io/badge/SocialTrust--Bench-23%2F23-16a34a)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)
+
+</div>
+
+---
+
+Origentra is the **security, ownership and governance layer for digital content** —
+the infrastructure through which trustworthy content is authorised, verified,
+protected and commercialised. It verifies **who** is acting, establishes **what**
+they own, controls **what** may be published, preserves **how** content was
+created, detects misuse, and supports accountable response.
 
 Content generation is becoming cheap and interchangeable. Verified identity,
 provable provenance, governed publication and accountable evidence are not.
-Origentra is the security, ownership and governance layer — not another
-scheduler, dashboard or caption generator.
+Origentra is that layer — infrastructure that creators, agencies, enterprises and
+platforms build on, **not** another scheduler, dashboard or caption generator.
 
-> This repository is an independent project. It is unrelated to, and shares no
-> code with, any other application in this workspace.
-
-**New here?** Read **[`docs/OVERVIEW.md`](docs/OVERVIEW.md)** — the full platform
-narrative tying all 13 packages together for stakeholders.
+> **Reference implementation** — 13 **zero-dependency** TypeScript packages on the
+> Node.js standard library, **184 tests**, and a **23-KPI reproducible benchmark**,
+> every metric mapped to a specific failure mode. A conventional Next.js
+> control-plane **dashboard** consumes them.
+>
+> **New here?** Read [`docs/OVERVIEW.md`](docs/OVERVIEW.md) — the full platform
+> narrative and architecture for stakeholders.
 
 ---
 
-## What is real in this repository (Milestone 1)
+## Why Origentra
 
-Everything here is **cryptographically real** — real Ed25519 signatures, real
-SHA-256 digests, a real deterministic policy decision, a real hash-chained audit
-log. There are **zero runtime dependencies**; the entire core runs on the Node.js
-standard library (Node ≥ 22.6).
+| Principle | What it means |
+| --- | --- |
+| **Deterministic governance** | The policy engine never calls a model. An AI agent may *propose*; a deterministic authority *decides*, fails **closed**, and an agent can never publish high-risk content or self-approve. Same inputs → same decision → auditable. |
+| **Evidence, not verdicts** | Discrete verification states and confidence with explicit uncertainty — never a single opaque "trust score", and never automated enforcement. Consumers decide and are accountable. |
+| **Verifiable & tamper-evident** | Ed25519-signed Content Passports, an RFC 6962 Merkle transparency log with signed checkpoints, inclusion/consistency proofs, revocation and witness cosigning. |
+| **Tenant-isolated & least-privilege** | Strict tenant isolation and scoped identities throughout; data minimisation by design (hashes and signals, not raw media or dossiers). |
+| **Honest by construction** | Every capability maps to code and tests, or it is a *prohibited* claim. Limitations and failed approaches are documented, not hidden. |
 
-The one thing that is *deliberately simulated*, and says so everywhere, is the
-**platform adapter**: it performs no network I/O and publishes to no real
-platform. See [`docs/CLAIMS.md`](docs/CLAIMS.md) for the exact list of claims
-this codebase is and is not permitted to make.
+---
 
-### The complete vertical slice
+## Capabilities
 
-```
-identity → asset → digest → Content Passport → public verify
-        → publication proposal → deterministic policy → human approval
-        → idempotent execution + signed receipt
-        → transformed-copy detection → tamper-evident evidence
-```
+| Capability | Package | Summary |
+| --- | --- | --- |
+| Identity & authority | `@origentra/core` | Signed identity claims, scopes, delegation, expiry, revocation |
+| Content Passport & provenance | `@origentra/core` | Ed25519-signed manifests; exact + fuzzy + perceptual recovery; discrete states |
+| Rights & consent | `@origentra/core` | Machine-readable assertions; fail-closed publication; evidence, not legal conclusions |
+| Governed execution | `@origentra/core` | Deterministic, fail-closed policy engine; idempotent signed receipts |
+| Durable, tenant-isolated storage | `@origentra/store` | Append-only persistence; tenant-scoped recovery; real local publishing adapter |
+| Perceptual fingerprinting | `@origentra/media` | Zero-dep PNG codec, image dHash, FFT acoustic hash, video frame-hash |
+| Network publishing | `@origentra/adapters` | Resilient HTTP adapter (OAuth2, retry, timeout, idempotency) + LinkedIn mapping |
+| Transparency, witnessing & revocation | `@origentra/transparency` | Merkle log, checkpoints, proofs, revocation, witness cosigning, gossip, anchoring |
+| Abuse-signal exchange | `@origentra/sentinel` | **Recommend-only**, quorum-gated, appealable, transparency-logged; sock-puppet linkage |
+| Abuse detectors | `@origentra/detectors` | Reused-content (text/image/audio/video) + impersonation → signed evidence |
+| Enterprise controls | `@origentra/enterprise` | Customer-managed keys, OIDC/JWT SSO, SCIM, legal hold, SIEM export |
+| Biometric consent gate | `@origentra/enrolment` | Granular consent-gated references; withdrawal → crypto-shred (Article 9 by design) |
+| Control-plane UI | `apps/dashboard` | Next.js dashboard with live analytics wired to real hash-chained events |
 
-Run it:
+---
+
+## Security & compliance posture
+
+- **Cryptography** — Ed25519 signatures, SHA-256 digests, AES-256-GCM envelope
+  encryption with customer-managed keys and rotation.
+- **Access** — tenant isolation, least-privilege scopes, separation of duties,
+  fail-closed authorisation, agents can never authorise high-risk actions.
+- **Integrity** — tamper-evident audit + RFC 6962 transparency log, signed
+  checkpoints, witness cosigning and fork/split-view detection.
+- **Enterprise** — OIDC/JWT SSO, SCIM 2.0 provisioning, legal hold, SIEM (CEF) export.
+- **Privacy** — data-minimised signals, biometric consent gate with crypto-shred;
+  a DPIA / Article 9 / LIA / privacy-notice package is prepared and requires DPO
+  sign-off before high-risk processing.
+- **No unaudited claims** — Origentra states no certifications it has not
+  independently obtained. See [`docs/CLAIMS.md`](docs/CLAIMS.md) and
+  [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
+
+---
+
+## Quickstart
+
+Requires Node ≥ 22.6. The core has **zero runtime dependencies** — nothing to install.
 
 ```bash
-node apps/cli/origentra.ts demo      # the whole loop, end-to-end
-npm test                             # 183 tests (+1 gated live) across all packages
-npm run bench                        # SocialTrust-Bench v0.1 (23 KPIs)
+node apps/cli/origentra.ts demo      # the complete control loop, end-to-end
+npm test                             # 184 tests (+1 gated live) across all packages
+npm run bench                        # SocialTrust-Bench v0.1 — 23 KPIs
 npm run serve                        # Origentra Verify on http://localhost:8787
 ```
 
-Other CLI commands operate on real files:
+### Control-plane dashboard
 
 ```bash
-node apps/cli/origentra.ts keygen
-node apps/cli/origentra.ts digest <file>
-node apps/cli/origentra.ts verify <file> <passport.json> [--trust <keyId>]
+node_modules/.bin/next dev apps/dashboard   # http://localhost:3000
 ```
+
+Dark/light/system theming, 20 languages (RTL), live analytics wired to **real
+hash-chained Origentra events**, world clock, weather, FX, and a
+transparency-first UI.
 
 ---
 
-## Architecture
+## Benchmark — SocialTrust-Bench v0.1
 
-A **modular monolith** — deliberately. No premature microservices; one package
-holds the reference trust primitives, one app drives them.
+A deterministic, reproducible **23-KPI** benchmark; every KPI maps to a failure
+mode and hard-gate KPIs exit non-zero, so it doubles as a CI gate. It spans
+passport validity, provenance survivability, unauthorised-publication prevention,
+agent approval-bypass (0 / 10,000 adversarial traces), transparency-log
+consistency, witness fork detection, abuse-signal integrity, detector accuracy,
+CMK integrity, SSO validation, and biometric consent gating — **all passing**.
 
-```
-packages/core/          @origentra/core — the open reference implementation
-  src/
-    canonical.ts        deterministic (JCS-style) JSON serialisation
-    digest.ts           sha256 content digests
-    keys.ts             Ed25519 keygen / detached signatures / key ids
-    trust.ts            trust store (a signature proves integrity; trust proves authority)
-    identity.ts         Origentra Identity — signed identity claims + scopes
-    fingerprint.ts      content-defined-chunking fuzzy fingerprint (survivability)
-    passport.ts         Origentra Passport — Content Passport sign/verify → discrete states
-    store.ts            passport store with layered (exact → fuzzy) recovery
-    rights.ts           Origentra Rights — assertion/consent evaluation (fail-closed)
-    policy.ts           Origentra Control — the DETERMINISTIC policy engine (risk 0–6)
-    execution.ts        governed execution — approvals, authorisation, idempotent receipts
-    audit.ts            tamper-evident append-only hash-chained log
-    evidence.ts         Origentra Response — incident evidence packs + completeness
-packages/store/         @origentra/store — durable tenant-isolated persistence
-    manifests.ts        append-only passport store; recover() is tenant-scoped
-    publish.ts          real LocalPublishAdapter (fs I/O, crash-safe idempotency)
-packages/media/         @origentra/media — perceptual fingerprinting
-    png.ts              zero-dependency PNG decode/encode (node:zlib)
-    perceptual.ts       dHash + hamming/similarity (survives re-encode/resize/brightness)
-    fft.ts              zero-dependency radix-2 FFT
-    audio.ts            acoustic hash (Haitsma-Kalker) + WAV PCM parse
-    video.ts            frame-hash-sequence fingerprint (containment matching)
-packages/adapters/      @origentra/adapters — network publication adapters
-    token.ts            OAuth2 token providers (static + client-credentials + cache)
-    http-adapter.ts     resilient HTTP adapter (retry/backoff/timeout/idempotency)
-    linkedin.ts         LinkedIn UGC body mapping (config-only; not run live)
-packages/transparency/  @origentra/transparency — verifiable log + revocation
-    merkle.ts           RFC 6962 Merkle: inclusion + consistency proofs
-    log.ts              signed checkpoints + proof results; durable (file-backed)
-    revocation.ts       trust-gated, log-recorded revocation registry
-    witness.ts          witness cosigning + fork / split-view detection
-    gossip.ts           checkpoint distribution + split-view audit (transport-agnostic)
-    http-transport.ts   HTTP witness client
-    anchor.ts           external anchoring interface + local file anchor
-packages/sentinel/      @origentra/sentinel — recommend-only abuse-signal exchange
-    report.ts           signed reports/appeals/adjudications/linkage
-    linkage.ts          sock-puppet cluster graph (confidence-scored evidence)
-    exchange.ts         quorum-gated, appealable, transparency-logged; NO verdict
-packages/detectors/     @origentra/detectors — abuse detectors that feed Sentinel
-    reuse.ts            reused/stolen-content detection (digest + CDC + perceptual)
-    av.ts               audio/video reuse detection (acoustic hash + frame-hash)
-    impersonation.ts    homoglyph/typosquat handles + perceptual likeness
-    report.ts           bridge: positive detection → signed Sentinel signal
-packages/enterprise/    @origentra/enterprise — enterprise controls
-    cmk.ts              customer-managed keys — AES-256-GCM envelope encryption
-    sso.ts              OIDC/JWT ID-token verification → scoped identity
-    scim.ts             SCIM 2.0 provisioning (issue/revoke identities)
-    governance.ts       legal hold (fail-closed) + SIEM (CEF) export
-packages/enrolment/     @origentra/enrolment — biometric consent gate
-    consent.ts          granular signed, withdrawable consent
-    registry.ts         consent-gated CMK-encrypted references; withdrawal → crypto-shred
-apps/cli/               reference CLI + end-to-end demo
-apps/witness/           Origentra Witness — node:http witness service
-apps/verifier/          Origentra Verify — node:http public verifier + inline UI
-apps/scim/              Origentra SCIM — node:http provisioning endpoint
-apps/publisher/         governed-publish runner + go-live entrypoint (live.ts)
-bench/                  SocialTrust-Bench v0.1 — 23-KPI reproducible harness
-docs/                   CLAIMS · LIMITATIONS · THREAT-MODEL · SOCIALTRUST-BENCH · ADRs
-```
-
-### Design commitments
-
-- **The policy engine never calls a model.** An AI agent may *propose* an action;
-  a deterministic authority independently *decides*. Same inputs → same decision.
-- **Fail closed.** Any check that cannot be satisfied → `BLOCK`.
-- **An AI agent can never publish high-risk content directly, and can never be an
-  approver.** High-risk requires a human holding `publish:approve`.
-- **Discrete verification states, never a single "trust score."** A verifier
-  receives evidence and decides for itself. A valid signature proves *integrity*;
-  only a trusted signer proves *authority*.
-- **Evidence, not legal conclusions.** Rights records are assertions with
-  evidence and status — Origentra does not adjudicate legal ownership.
-- **Recommend-only abuse signals.** The abuse-signal exchange shares accountable,
-  quorum-gated, appealable *evidence* — never an enforcement verdict. Consuming
-  platforms decide and are accountable. Origentra never bans or blocks accounts.
+> Self-measured on a self-defined corpus: a reproducibility and regression tool,
+> not third-party audit. Independent replication is the goal.
 
 ---
 
-## Deliberately *not* built yet
+## Integrity & honest scope
 
-Per the project's own scope discipline (prove one narrow, complete loop first),
-these are later milestones and are **not** present or claimed:
-
-- **Live** platform integrations. The network adapter (OAuth2, retry, timeout,
-  idempotency) and a LinkedIn body mapping exist and are tested against a *mock*
-  platform — but nothing has run against a real LinkedIn/YouTube/Instagram/TikTok
-  API. That needs the operator's credentials and a live endpoint (Milestone 6b),
-  and LinkedIn media (non-text) shares are not yet mapped.
-- Cross-platform reuse / impersonation monitoring *at scale*. Detectors for text,
-  image, **audio and video** plus the recommend-only exchange are built and tested;
-  large-scale continuous monitoring across platforms is not. AV detectors consume
-  PCM / extracted frames — MP3/AAC/MP4/H.264 decoding is out of scope.
-- Robustness to heavy **crop/rotation** (image and video), and Chromaprint/
-  AcoustID compatibility. Audio (acoustic hash) and video (frame-hash) perceptual
-  fingerprints and their reuse detectors are built and tested — on PCM / extracted
-  frames; see [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
-- **XML SAML SSO, external KMS/HSM, and PostgreSQL row-level security.** SSO
-  (OIDC/JWT), SCIM provisioning, customer-managed envelope encryption, legal hold
-  and SIEM export are built and tested; SAML XML-DSig, AWS/GCP-KMS integration and
-  a hardened RLS database are not (the reference stores are file-backed but enforce
-  the same isolation contract).
-- Independent third-party benchmark replication.
+Origentra maintains a **claims register** ([`docs/CLAIMS.md`](docs/CLAIMS.md)) that
+separates evidence-backed *permitted* claims from *prohibited* ones. In this
+repository: the network adapter is verified against a **mock** platform (nothing
+has run against a live third-party API); detection is never certain; a passport
+proves provenance, not truth; and biometric processing requires a lawful basis the
+code does not itself provide. Failed approaches are documented, not deleted.
 
 ---
 
-## Roadmap
+## Documentation
 
-| Milestone | Scope | Status |
-| --- | --- | --- |
-| **1. Trust core** | identity, passport, provenance, rights, policy, execution, audit — real crypto, tested | ✅ done |
-| **2. Public verifier + persistence** | node:http verifier, durable tenant-isolated store | ✅ done |
-| **3. Perceptual media** | zero-dep PNG codec + dHash (image survivability) | ✅ done |
-| **4. Real adapter** | non-simulated local publishing adapter behind the shared contract | ✅ done |
-| **5. SocialTrust-Bench v0.1** | 23-KPI reproducible benchmark, each mapped to a failure mode | ✅ done |
-| **6. Network adapter transport** | OAuth2 + retry/backoff/timeout/idempotency HTTP adapter + LinkedIn mapping, tested vs. a mock platform | ✅ done |
-| **7. Transparency log + revocation** | RFC 6962 Merkle log, signed checkpoints, inclusion/consistency proofs, trust-gated revocation consulted by the verifier | ✅ done |
-| **8. Witnessing + durable log** | witness cosigning (refuses non-append-only heads), fork/split-view detection, file-backed durable log | ✅ done |
-| **8b. Gossip transport + anchoring** | HTTP witness service, client transport, checkpoint distribution, split-view auditor, local checkpoint anchor | ✅ done |
-| **9. Abuse-signal exchange** | recommend-only, quorum-gated, appealable, transparency-logged evidence sharing + sock-puppet linkage — never a verdict | ✅ done |
-| **10. Abuse detectors** | reused/stolen-content (digest + CDC + perceptual) + impersonation (homoglyph/typosquat + likeness), bridging to signed Sentinel signals | ✅ done |
-| **11. Audio/video detectors** | FFT acoustic hash + frame-hash video fingerprint + AV reuse detection (on PCM / extracted frames) | ✅ done |
-| **12. Enterprise controls** | customer-managed keys (envelope encryption + rotation), OIDC/JWT SSO, SCIM provisioning, legal hold + SIEM export | ✅ done |
-| **6b. Go-live readiness** | governed-publish runner through the real adapter, hermetic mock tests, env-credentialed LinkedIn publisher + gated live test + runbook (`docs/GO-LIVE.md`) | ✅ ready — awaiting credentials |
-| **13. Biometric consent gate** | granular signed consent, consent-gated CMK-encrypted references, withdrawal → crypto-shred (Article 9 privacy-by-design; legal sign-off still required) | ✅ done |
-| 8c. Witness federation + on-chain anchor | deployed multi-operator witnesses, discovery/registry, external anchoring | planned |
-| 12b. SAML + hardened storage | XML SAML SSO, external KMS/HSM, PostgreSQL row-level security, real codec decode | planned |
+| Document | Purpose |
+| --- | --- |
+| [`docs/OVERVIEW.md`](docs/OVERVIEW.md) | Platform overview & architecture (start here) |
+| [`docs/CLAIMS.md`](docs/CLAIMS.md) | Claims register — permitted vs prohibited |
+| [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) | Declared limitations & known gaps |
+| [`docs/THREAT-MODEL.md`](docs/THREAT-MODEL.md) | Trust boundaries, threats & mitigations |
+| [`docs/SOCIALTRUST-BENCH.md`](docs/SOCIALTRUST-BENCH.md) | Benchmark methodology |
+| [`docs/GO-LIVE.md`](docs/GO-LIVE.md) | Runbook for live platform publishing |
+| [`docs/adr/`](docs/adr) | Architecture Decision Records |
+
+---
 
 ## License
 

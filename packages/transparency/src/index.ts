@@ -7,6 +7,7 @@ export * from './merkle.ts';
 export * from './log.ts';
 export * from './revocation.ts';
 export * from './witness.ts';
+export * from './witness-registry.ts';
 export * from './gossip.ts';
 export * from './http-transport.ts';
 export * from './anchor.ts';
