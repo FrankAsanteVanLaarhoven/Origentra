@@ -22,9 +22,9 @@ export const LANGUAGES: LangMeta[] = [
   { code: "zh", name: "Chinese", native: "中文" },
   { code: "ja", name: "Japanese", native: "日本語" },
   { code: "hi", name: "Hindi", native: "हिन्दी" },
-  { code: "pt", name: "Portuguese", native: "Português" },
+  { code: "pt", name: "Portuguese", native: "Português", full: true },
   { code: "ru", name: "Russian", native: "Русский" },
-  { code: "it", name: "Italian", native: "Italiano" },
+  { code: "it", name: "Italian", native: "Italiano", full: true },
   { code: "ko", name: "Korean", native: "한국어" },
   { code: "nl", name: "Dutch", native: "Nederlands" },
   { code: "tr", name: "Turkish", native: "Türkçe" },
@@ -113,4 +113,26 @@ const ar: Dict = {
   "label.system": "النظام", "label.operational": "جميع الأنظمة تعمل", "action.search": "بحث…",
 };
 
-export const DICTS: Partial<Record<Lang, Dict>> = { en, es, fr, de, ar };
+const pt: Dict = {
+  "app.tag": "Plano de Controlo de Confiança",
+  "nav.overview": "Visão Geral", "nav.analytics": "Análise", "nav.identity": "Identidade",
+  "nav.provenance": "Proveniência", "nav.abuse": "Sinais de Abuso", "nav.settings": "Definições", "nav.profile": "Perfil",
+  "section.traffic": "Tráfego ao Vivo", "section.dataflow": "Fluxo de Dados", "section.events": "Fluxo de Eventos",
+  "section.weather": "Previsão 7 Dias", "section.clock": "Relógio Mundial", "section.markets": "Mercados", "section.news": "Feed de Inteligência",
+  "kpi.validity": "Validade do Passaporte", "kpi.throughput": "Taxa", "kpi.latency": "Latência Média", "kpi.blocked": "Bloqueado / Falha Segura",
+  "label.live": "AO VIVO", "label.now": "AGORA", "label.theme": "Tema", "label.language": "Idioma", "label.sound": "Som",
+  "label.system": "Sistema", "label.operational": "Todos os sistemas operacionais", "action.search": "Pesquisar…",
+};
+
+const it: Dict = {
+  "app.tag": "Piano di Controllo Affidabile",
+  "nav.overview": "Panoramica", "nav.analytics": "Analisi", "nav.identity": "Identità",
+  "nav.provenance": "Provenienza", "nav.abuse": "Segnali di Abuso", "nav.settings": "Impostazioni", "nav.profile": "Profilo",
+  "section.traffic": "Traffico Live", "section.dataflow": "Flusso di Dati", "section.events": "Flusso Eventi",
+  "section.weather": "Previsioni 7 Giorni", "section.clock": "Orologio Mondiale", "section.markets": "Mercati", "section.news": "Feed di Intelligence",
+  "kpi.validity": "Validità Passaporto", "kpi.throughput": "Portata", "kpi.latency": "Latenza Mediana", "kpi.blocked": "Bloccato / Fail-Closed",
+  "label.live": "LIVE", "label.now": "ADESSO", "label.theme": "Tema", "label.language": "Lingua", "label.sound": "Suono",
+  "label.system": "Sistema", "label.operational": "Tutti i sistemi operativi", "action.search": "Cerca…",
+};
+
+export const DICTS: Partial<Record<Lang, Dict>> = { en, es, fr, de, ar, pt, it };

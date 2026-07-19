@@ -6,6 +6,8 @@ import { StatTile } from "@/components/StatTile";
 import { WorldClock } from "@/components/WorldClock";
 import { Weather } from "@/components/Weather";
 import { LiveAnalytics } from "@/components/LiveAnalytics";
+import { Markets } from "@/components/Markets";
+import { NewsFeed } from "@/components/NewsFeed";
 
 interface Stats { validity: string; throughput: string; latency: string; blocked: string }
 
@@ -49,6 +51,11 @@ export default function Home() {
         <div className="lg:col-span-2">
           <Weather />
         </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Markets />
+        <NewsFeed />
       </div>
 
       <div>

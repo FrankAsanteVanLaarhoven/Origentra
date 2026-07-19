@@ -3,6 +3,7 @@
 import { useI18n } from "@/lib/i18n";
 import { ThemeToggle, LangSwitcher, SoundToggle } from "./controls";
 import { MiniClock } from "./WorldClock";
+import { PiPButton } from "./PiPButton";
 
 export function Topbar() {
   const { t } = useI18n();
@@ -20,6 +21,7 @@ export function Topbar() {
       </div>
       <MiniClock />
       <div className="flex items-center gap-2">
+        <PiPButton />
         <SoundToggle />
         <LangSwitcher />
         <ThemeToggle />
